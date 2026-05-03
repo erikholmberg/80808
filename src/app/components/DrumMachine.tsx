@@ -65,6 +65,18 @@ export function DrumMachine() {
     undefined,
   );
 
+  const [showIOSAudioHint, setShowIOSAudioHint] = useState(false);
+
+  useEffect(() => {
+    const nav = navigator as Navigator & { audioSession?: unknown };
+    const hasAudioSession = typeof nav.audioSession !== "undefined";
+    const ua = navigator.userAgent;
+    const iOSDevice =
+      /iPad|iPhone|iPod/.test(ua) ||
+      (navigator.platform === "MacIntel" && (navigator.maxTouchPoints ?? 0) > 1);
+    setShowIOSAudioHint(iOSDevice && !hasAudioSession);
+  }, []);
+
   useLayoutEffect(() => {
     const mq = window.matchMedia("(min-width: 721px)");
     const sync = () => setProgramRowSideBySide(mq.matches);
@@ -121,18 +133,23 @@ export function DrumMachine() {
     return ctx;
   }, []);
 
-  /** First touch anywhere primes the graph; iOS often delays `click` past the user-activation window. */
+  /** First touch primes the graph — `touchstart` and `touchend` (Safari differs by version). */
   useEffect(() => {
-    const onTouchStart = () => {
+    const primeOnce = () => {
       try {
         touchCtx();
       } catch {
         /* ignore */
       }
-      window.removeEventListener("touchstart", onTouchStart, { capture: true });
+      window.removeEventListener("touchstart", primeOnce, { capture: true });
+      window.removeEventListener("touchend", primeOnce, { capture: true });
     };
-    window.addEventListener("touchstart", onTouchStart, { capture: true, passive: true });
-    return () => window.removeEventListener("touchstart", onTouchStart, { capture: true });
+    window.addEventListener("touchstart", primeOnce, { capture: true, passive: true });
+    window.addEventListener("touchend", primeOnce, { capture: true, passive: true });
+    return () => {
+      window.removeEventListener("touchstart", primeOnce, { capture: true });
+      window.removeEventListener("touchend", primeOnce, { capture: true });
+    };
   }, [touchCtx]);
 
   const beginVoice = useCallback((v: VoiceId) => {
@@ -314,6 +331,11 @@ export function DrumMachine() {
         <p className={styles.sub}>
           Program the step grid, play pads with 1–6 and Q–Y, save patterns as JSON.
         </p>
+        {showIOSAudioHint ? (
+          <p className={styles.mobileAudioHint} role="note">
+            iPhone / iPad: turn off silent mode if you don&apos;t hear drums.
+          </p>
+        ) : null}
       </header>
 
       <Tr808Panel

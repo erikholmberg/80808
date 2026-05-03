@@ -23,6 +23,15 @@
   line-height: 1.5;
 }
 
+.mobileAudioHint {
+  margin-top: 0.45rem;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  color: var(--dm-text-muted);
+  opacity: 0.9;
+  max-width: 42rem;
+}
+
 .hiddenFile {
   position: absolute;
   width: 1px;

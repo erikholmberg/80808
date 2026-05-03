@@ -252,6 +252,16 @@ function getOneSampleSilentBuffer(ctx: AudioContext): AudioBuffer {
   return b;
 }
 
+/** iOS 17+ — Web Audio defaults to "ambient" and is muted when the Ring/Silent switch is on. */
+function applyMobilePlaybackAudioSession(): void {
+  try {
+    const nav = navigator as Navigator & { audioSession?: { type: string } };
+    if (nav.audioSession) nav.audioSession.type = "playback";
+  } catch {
+    /* ignore */
+  }
+}
+
 /**
  * iOS Safari only unlocks audio when `resume()` is invoked in the same turn as the
  * user gesture (tap/click). Do not `await` before this from a pointer handler.
@@ -266,21 +276,20 @@ export function unlockAudioContext(ctx: AudioContext): void {
  * Call synchronously from touch/pointer handlers (not from delayed `click` alone).
  */
 export function primeAudioContext(ctx: AudioContext): void {
+  applyMobilePlaybackAudioSession();
   if (ctx.state !== "running") void ctx.resume();
   if (silentPrimed.has(ctx)) return;
   silentPrimed.add(ctx);
   try {
     const src = ctx.createBufferSource();
     src.buffer = getOneSampleSilentBuffer(ctx);
-    const g = ctx.createGain();
-    g.gain.value = 0.0001;
-    src.connect(g);
-    g.connect(ctx.destination);
+    /* Direct to destination matches common iOS warmup snippets; extra Gain was flaky on some builds. */
+    src.connect(ctx.destination);
     const t = ctx.currentTime;
     src.start(t);
     src.stop(t + 0.002);
   } catch {
-    /* ignore */
+    silentPrimed.delete(ctx);
   }
 }
 
