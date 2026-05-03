@@ -8,7 +8,11 @@ import {
   useState,
   startTransition,
 } from "react";
-import { playVoice, resumeAudioContext } from "@/audio/drumKit";
+import {
+  createBrowserAudioContext,
+  playVoice,
+  unlockAudioContext,
+} from "@/audio/drumKit";
 import { secondsPerStep } from "@/audio/sequencer";
 import { voiceForKeyboardEvent } from "@/keymap";
 import { BUILT_IN_PRESETS } from "@/presets";
@@ -107,22 +111,21 @@ export function DrumMachine() {
     }
   }, [pattern]);
 
-  const ensureCtx = useCallback(async () => {
+  /** Create context if needed and request resume — call synchronously from user input (iOS). */
+  const touchCtx = useCallback((): AudioContext => {
     if (!audioCtxRef.current) {
-      audioCtxRef.current = new AudioContext();
+      audioCtxRef.current = createBrowserAudioContext();
     }
-    await resumeAudioContext(audioCtxRef.current);
-    return audioCtxRef.current;
+    const ctx = audioCtxRef.current;
+    unlockAudioContext(ctx);
+    return ctx;
   }, []);
 
-  const beginVoice = useCallback(
-    async (v: VoiceId) => {
-      const ctx = await ensureCtx();
-      playVoice(ctx, v, ctx.currentTime);
-      setPressed((p) => ({ ...p, [v]: true }));
-    },
-    [ensureCtx],
-  );
+  const beginVoice = useCallback((v: VoiceId) => {
+    const ctx = touchCtx();
+    playVoice(ctx, v, ctx.currentTime);
+    setPressed((p) => ({ ...p, [v]: true }));
+  }, [touchCtx]);
 
   const endVoice = useCallback((v: VoiceId) => {
     setPressed((p) => {
@@ -155,7 +158,8 @@ export function DrumMachine() {
           setPlaying(false);
           setPlayhead(null);
         } else {
-          void ensureCtx().then(() => setPlaying(true));
+          touchCtx();
+          setPlaying(true);
         }
         return;
       }
@@ -177,42 +181,46 @@ export function DrumMachine() {
       window.removeEventListener("keydown", onKeyDown, { capture: true });
       window.removeEventListener("keyup", onKeyUp, { capture: true });
     };
-  }, [beginVoice, endVoice, ensureCtx]);
+  }, [beginVoice, endVoice, touchCtx]);
 
   useEffect(() => {
     if (!playing) return;
 
-    const ctx = audioCtxRef.current ?? new AudioContext();
+    const ctx = audioCtxRef.current ?? createBrowserAudioContext();
     audioCtxRef.current = ctx;
 
     let raf = 0;
     let cancelled = false;
+    let primed = false;
 
-    void resumeAudioContext(ctx).then(() => {
-      if (cancelled) return;
-      nextStepTimeRef.current = ctx.currentTime + 0.05;
-      stepIndexRef.current = 0;
-
-      const loop = () => {
-        if (!playingRef.current || cancelled) return;
-        const scheduleAhead = 0.12;
-        while (nextStepTimeRef.current < ctx.currentTime + scheduleAhead) {
-          const step = stepIndexRef.current;
-          const grid = patternRef.current.steps;
-          const sp = secondsPerStep(patternRef.current.bpm);
-          for (let r = 0; r < 12; r++) {
-            if (grid[r]?.[step]) {
-              playVoice(ctx, VOICES[r]!, nextStepTimeRef.current);
-            }
-          }
-          setPlayhead(step);
-          stepIndexRef.current = (step + 1) % 16;
-          nextStepTimeRef.current += sp;
-        }
+    const loop = () => {
+      if (!playingRef.current || cancelled) return;
+      if (ctx.state !== "running") {
         raf = requestAnimationFrame(loop);
-      };
+        return;
+      }
+      if (!primed) {
+        nextStepTimeRef.current = ctx.currentTime + 0.05;
+        stepIndexRef.current = 0;
+        primed = true;
+      }
+      const scheduleAhead = 0.12;
+      while (nextStepTimeRef.current < ctx.currentTime + scheduleAhead) {
+        const step = stepIndexRef.current;
+        const grid = patternRef.current.steps;
+        const sp = secondsPerStep(patternRef.current.bpm);
+        for (let r = 0; r < 12; r++) {
+          if (grid[r]?.[step]) {
+            playVoice(ctx, VOICES[r]!, nextStepTimeRef.current);
+          }
+        }
+        setPlayhead(step);
+        stepIndexRef.current = (step + 1) % 16;
+        nextStepTimeRef.current += sp;
+      }
       raf = requestAnimationFrame(loop);
-    });
+    };
+    raf = requestAnimationFrame(loop);
 
     return () => {
       cancelled = true;
@@ -225,7 +233,8 @@ export function DrumMachine() {
   };
 
   const onPlay = () => {
-    void ensureCtx().then(() => setPlaying(true));
+    touchCtx();
+    setPlaying(true);
   };
 
   const onStop = () => {
@@ -295,7 +304,7 @@ export function DrumMachine() {
 
       <Tr808Panel
         pressed={pressed}
-        onPadDown={(v) => void beginVoice(v)}
+        onPadDown={beginVoice}
         onPadUp={endVoice}
         playing={playing}
         onPlay={onPlay}

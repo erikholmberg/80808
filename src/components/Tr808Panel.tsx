@@ -69,7 +69,7 @@ export function Tr808Panel({
             aria-pressed={Boolean(pressed[v])}
             aria-label={`${v} pad`}
             onPointerDown={(e) => {
-              e.preventDefault();
+              /* Avoid preventDefault on touch — iOS ties Web Audio unlock to the gesture; default touch handling helps. */
               (e.target as HTMLButtonElement).setPointerCapture(e.pointerId);
               onPadDown(v);
             }}

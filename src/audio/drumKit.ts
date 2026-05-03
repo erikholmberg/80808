@@ -226,6 +226,29 @@ export function playVoice(ctx: AudioContext, voice: VoiceId, t: number): void {
   }
 }
 
+/**
+ * Creates an AudioContext with legacy Safari / iOS support (`webkitAudioContext`).
+ * Must only run in the browser (client components).
+ */
+export function createBrowserAudioContext(): AudioContext {
+  if (typeof window === "undefined") {
+    throw new Error("AudioContext can only be created in the browser");
+  }
+  const w = window as typeof window & { webkitAudioContext?: typeof AudioContext };
+  const Ctor = window.AudioContext ?? w.webkitAudioContext;
+  if (!Ctor) throw new Error("Web Audio API not supported");
+  return new Ctor();
+}
+
+/**
+ * iOS Safari only unlocks audio when `resume()` is invoked in the same turn as the
+ * user gesture (tap/click). Do not `await` before this from a pointer handler.
+ */
+export function unlockAudioContext(ctx: AudioContext): void {
+  if (ctx.state === "suspended") void ctx.resume();
+}
+
+/** Await running state — avoid between user gesture and first `playVoice` on iOS; use `unlockAudioContext` in handlers. */
 export async function resumeAudioContext(ctx: AudioContext): Promise<void> {
   if (ctx.state === "suspended") await ctx.resume();
 }
