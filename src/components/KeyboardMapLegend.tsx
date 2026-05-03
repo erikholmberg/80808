@@ -5,12 +5,17 @@ import styles from "./KeyboardMapLegend.module.css";
 
 type Props = {
   pressed: Partial<Record<VoiceId, boolean>>;
+  /** Remove outer spacing when placed in a composite row (e.g. beside the step grid) */
+  embedded?: boolean;
 };
 
-export function KeyboardMapLegend({ pressed }: Props) {
+export function KeyboardMapLegend({ pressed, embedded }: Props) {
   return (
-    <section className={styles.wrap} aria-label="Keyboard mapping">
-      <p className={styles.title}>Computer keyboard</p>
+    <section
+      className={`${styles.wrap} ${embedded ? styles.wrapEmbedded : ""}`}
+      aria-label="Keyboard mapping"
+    >
+      <p className={styles.title}>Computer keyboard · drum pads</p>
       <div className={styles.rows}>
         <div className={styles.row}>
           {VOICES.slice(0, 6).map((v) => (

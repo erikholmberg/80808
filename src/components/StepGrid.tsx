@@ -7,11 +7,21 @@ type Props = {
   steps: StepGrid;
   playhead: number | null;
   onToggle: (row: number, col: number) => void;
+  /** Tighter cell sizing for side-by-side layouts */
+  compact?: boolean;
+  /** Stretch vertically to fill the column (pair with compact beside keyboard card) */
+  fillHeight?: boolean;
 };
 
-export function StepGrid({ steps, playhead, onToggle }: Props) {
+export function StepGrid({ steps, playhead, onToggle, compact, fillHeight }: Props) {
+  const fill = Boolean(compact && fillHeight);
   return (
-    <div className={styles.wrap}>
+    <div
+      className={`${styles.wrap} ${compact ? styles.wrapCompact : ""} ${fill ? styles.wrapCompactFill : ""}`}
+    >
+      {compact ? (
+        <p className={styles.cardTitle}>Step sequencer</p>
+      ) : null}
       <div className={styles.headerRow}>
         <div className={styles.corner} />
         {Array.from({ length: 16 }, (_, i) => (

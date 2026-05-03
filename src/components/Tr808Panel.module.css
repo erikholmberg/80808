@@ -1,0 +1,166 @@
+.panel {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  margin: 0;
+  padding: clamp(0.75rem, 2vw, 1.1rem);
+  border-radius: var(--dm-radius);
+  background: var(--dm-surface);
+  border: 1px solid var(--dm-border-subtle);
+}
+
+.topBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  min-width: 0;
+}
+
+.lcd {
+  flex: 1;
+  min-width: min(12rem, 100%);
+  padding: 0.65rem 0.85rem;
+  border-radius: var(--dm-radius-sm);
+  background: var(--dm-bg);
+  border: 1px solid var(--dm-border-subtle);
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.lcdLine {
+  color: var(--dm-text);
+  font-size: clamp(0.78rem, 2.5vw, 0.9rem);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.lcdSub {
+  color: var(--dm-text-muted);
+  font-size: 0.8rem;
+}
+
+.transport {
+  font-family: var(--font-geist-mono), monospace;
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 0.5rem 1.1rem;
+  border-radius: var(--dm-radius-sm);
+  border: none;
+  background: var(--dm-accent);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.transport:hover {
+  background: var(--dm-accent-hover);
+}
+
+.transport:focus-visible {
+  outline: 2px solid var(--dm-focus);
+  outline-offset: 2px;
+}
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(16, minmax(0, 1fr));
+  gap: clamp(3px, 0.8vw, 6px);
+  margin-bottom: 1rem;
+  width: 100%;
+}
+
+.stepCell {
+  aspect-ratio: 1;
+  min-height: 0;
+  min-width: 0;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid color-mix(in srgb, var(--dm-border) 70%, transparent);
+}
+
+.band0 {
+  background: var(--dm-step-a);
+}
+.band1 {
+  background: var(--dm-step-b);
+}
+.band2 {
+  background: var(--dm-step-c);
+}
+.band3 {
+  background: var(--dm-step-d);
+}
+
+.stepLit {
+  outline: 2px solid #fff;
+  outline-offset: -1px;
+}
+
+.stepNum {
+  font-size: clamp(0.45rem, 1.8vw, 0.55rem);
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.padHint {
+  font-size: 0.75rem;
+  color: var(--dm-text-dim);
+  margin-bottom: 0.5rem;
+}
+
+.pads {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: clamp(4px, 1.2vw, 8px);
+  width: 100%;
+}
+
+@media (max-width: 640px) {
+  .pads {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .steps {
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+  }
+}
+
+.pad {
+  padding: clamp(0.35rem, 1.2vw, 0.5rem) 0.35rem;
+  border-radius: var(--dm-radius-sm);
+  border: 1px solid var(--dm-border);
+  background: var(--dm-surface-2);
+  color: var(--dm-text);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: clamp(0.65rem, 2.2vw, 0.78rem);
+  font-weight: 600;
+  cursor: pointer;
+  min-width: 0;
+  transition:
+    background 0.1s ease,
+    border-color 0.1s ease;
+}
+
+.pad:hover {
+  background: var(--dm-elevated);
+  border-color: var(--dm-border-hover);
+}
+
+.pad:focus-visible {
+  outline: 2px solid var(--dm-focus);
+  outline-offset: 1px;
+}
+
+.padDown {
+  background: var(--dm-accent-muted);
+  border-color: var(--dm-accent);
+  color: var(--dm-text);
+}

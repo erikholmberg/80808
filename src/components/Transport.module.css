@@ -4,10 +4,10 @@
   gap: 0.75rem 1rem;
   align-items: flex-end;
   margin-top: 1rem;
-  padding: 0.75rem 1rem;
-  border-radius: 10px;
-  background: #16161e;
-  border: 1px solid #333340;
+  padding: 1rem;
+  border-radius: var(--dm-radius);
+  background: var(--dm-surface);
+  border: 1px solid var(--dm-border-subtle);
 }
 
 .field {
@@ -18,29 +18,35 @@
 
 .label {
   font-size: 0.7rem;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #8e8e9e;
+  color: var(--dm-text-muted);
+  font-weight: 500;
 }
 
 .input {
   min-width: 12rem;
-  padding: 0.45rem 0.55rem;
-  border-radius: 6px;
-  border: 1px solid #3a3a48;
-  background: #0e0e14;
-  color: #eaeaf2;
+  padding: 0.5rem 0.6rem;
+  border-radius: var(--dm-radius-sm);
+  border: 1px solid var(--dm-border);
+  background: var(--dm-bg);
+  color: var(--dm-text);
   font-family: var(--font-geist-mono), ui-monospace, monospace;
   font-size: 0.9rem;
 }
 
+.input:focus-visible {
+  outline: 2px solid var(--dm-focus);
+  outline-offset: 1px;
+}
+
 .inputNarrow {
   width: 5rem;
-  padding: 0.45rem 0.55rem;
-  border-radius: 6px;
-  border: 1px solid #3a3a48;
-  background: #0e0e14;
-  color: #eaeaf2;
+  padding: 0.5rem 0.6rem;
+  border-radius: var(--dm-radius-sm);
+  border: 1px solid var(--dm-border);
+  background: var(--dm-bg);
+  color: var(--dm-text);
   font-family: var(--font-geist-mono), ui-monospace, monospace;
 }
 
@@ -53,26 +59,36 @@
 
 .btn,
 .btnPrimary {
-  padding: 0.45rem 0.85rem;
-  border-radius: 6px;
-  border: 1px solid #444454;
-  background: #22222c;
-  color: #eaeaf2;
+  padding: 0.5rem 0.9rem;
+  border-radius: var(--dm-radius-sm);
   font-size: 0.85rem;
+  font-weight: 500;
   cursor: pointer;
+  border: 1px solid var(--dm-border);
+  background: var(--dm-surface-2);
+  color: var(--dm-text);
+  transition:
+    background 0.1s ease,
+    border-color 0.1s ease;
 }
 
 .btn:hover {
-  border-color: #6a6a7c;
+  background: var(--dm-elevated);
+  border-color: var(--dm-border-hover);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--dm-focus);
+  outline-offset: 1px;
 }
 
 .btnPrimary {
-  border-color: #c9a227;
-  background: linear-gradient(180deg, #e9cb4e 0%, #b8941f 100%);
-  color: #1a1406;
-  font-weight: 700;
+  border: none;
+  background: var(--dm-accent);
+  color: #fff;
+  font-weight: 600;
 }
 
 .btnPrimary:hover {
-  filter: brightness(1.05);
+  background: var(--dm-accent-hover);
 }

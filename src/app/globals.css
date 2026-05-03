@@ -1,6 +1,28 @@
 :root {
-  --background: #0f0f14;
-  --foreground: #eaeaf2;
+  /* Flat / modern design tokens */
+  --dm-bg: #09090b;
+  --dm-surface: #18181b;
+  --dm-surface-2: #1f1f23;
+  --dm-elevated: #27272a;
+  --dm-border: #3f3f46;
+  --dm-border-subtle: #27272a;
+  --dm-text: #fafafa;
+  --dm-text-muted: #a1a1aa;
+  --dm-text-dim: #71717a;
+  --dm-accent: #3b82f6;
+  --dm-accent-hover: #2563eb;
+  --dm-accent-muted: rgba(59, 130, 246, 0.15);
+  --dm-focus: #60a5fa;
+  --dm-step-a: #dc2626;
+  --dm-step-b: #ea580c;
+  --dm-step-c: #ca8a04;
+  --dm-step-d: #d6d3d1;
+  --dm-cell-on: #facc15;
+  --dm-cell-on-text: #422006;
+  --dm-radius: 8px;
+  --dm-radius-sm: 6px;
+  --background: var(--dm-bg);
+  --foreground: var(--dm-text);
 }
 
 html {
@@ -16,12 +38,7 @@ body {
   min-height: 100%;
   margin: 0;
   color: var(--foreground);
-  background: radial-gradient(
-      ellipse 120% 80% at 50% -20%,
-      #1e1e28 0%,
-      var(--background) 55%
-    ),
-    var(--background);
+  background: var(--dm-bg);
   font-family: var(--font-geist-sans), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

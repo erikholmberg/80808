@@ -1,16 +1,140 @@
 .wrap {
   margin-top: 1.25rem;
   overflow: auto;
-  border-radius: 10px;
-  border: 1px solid #333340;
-  background: #12121a;
-  padding: 0.5rem;
+  border-radius: var(--dm-radius);
+  border: 1px solid var(--dm-border-subtle);
+  background: var(--dm-surface);
+  padding: 1rem;
+  text-align: left;
+}
+
+.wrapCompact {
+  margin-top: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 1rem;
+  text-align: left;
+}
+
+.cardTitle {
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--dm-text-muted);
+  margin: 0 0 0.65rem;
+  text-align: left;
+}
+
+.wrapCompact .headerRow,
+.wrapCompact .row {
+  grid-template-columns: 1.75rem repeat(16, minmax(0, 1fr));
+  gap: 3px;
+  width: 100%;
+}
+
+.wrapCompact .corner {
+  min-width: 1.75rem;
+}
+
+.wrapCompact .stepHead {
+  font-size: 0.52rem;
+  padding: 0.08rem 0;
+}
+
+.wrapCompact .voice {
+  font-size: 0.58rem;
+}
+
+.wrapCompact .cell {
+  min-height: 0.72rem;
+  border-radius: 2px;
+}
+
+/* Fills the column next to the keyboard card (desktop); rows share height evenly */
+.wrapCompactFill {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  min-height: 0;
+  margin-top: 0;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto auto repeat(12, minmax(0, 1fr));
+  gap: 3px;
+  align-content: stretch;
+}
+
+.wrapCompactFill .cardTitle {
+  margin-bottom: 0.65rem;
+}
+
+.wrapCompactFill .headerRow {
+  margin-bottom: 0;
+}
+
+.wrapCompactFill .row {
+  margin-bottom: 0;
+  min-height: 0;
+  align-items: center;
+  container-type: size;
+}
+
+.wrapCompactFill .voice {
+  align-self: center;
+}
+
+/* Largest square that fits in each cell (min of column width and row height) */
+.wrapCompactFill .cell {
+  aspect-ratio: 1;
+  width: min(100%, 100cqh);
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  min-height: 0;
+  margin-inline: auto;
+  place-self: center;
+}
+
+@media (max-width: 720px) {
+  .wrapCompactFill {
+    height: auto;
+    min-height: unset;
+    width: 100%;
+    max-width: 100%;
+    overflow: auto;
+    display: block;
+  }
+
+  .wrapCompactFill .headerRow {
+    margin-bottom: 4px;
+  }
+
+  .wrapCompactFill .row {
+    margin-bottom: 4px;
+  }
+
+  .wrapCompactFill .cell {
+    aspect-ratio: 1;
+    min-height: 0.72rem;
+    height: auto;
+    width: auto;
+    max-height: none;
+    margin-inline: unset;
+    place-self: unset;
+  }
+
+  .wrapCompactFill .row {
+    container-type: normal;
+  }
 }
 
 .headerRow {
   display: grid;
   grid-template-columns: 3rem repeat(16, minmax(1.5rem, 1fr));
-  gap: 3px;
+  gap: 4px;
   margin-bottom: 4px;
 }
 
@@ -21,28 +145,28 @@
 .stepHead {
   text-align: center;
   font-size: 0.65rem;
-  color: #6c6c7c;
+  color: var(--dm-text-dim);
   font-family: var(--font-geist-mono), ui-monospace, monospace;
   padding: 0.2rem 0;
 }
 
 .stepHeadActive {
-  color: #f5d742;
+  color: var(--dm-accent);
   font-weight: 700;
 }
 
 .row {
   display: grid;
   grid-template-columns: 3rem repeat(16, minmax(1.5rem, 1fr));
-  gap: 3px;
-  margin-bottom: 3px;
+  gap: 4px;
+  margin-bottom: 4px;
 }
 
 .voice {
   font-family: var(--font-geist-mono), ui-monospace, monospace;
   font-size: 0.75rem;
-  font-weight: 700;
-  color: #b8b8cc;
+  font-weight: 600;
+  color: var(--dm-text-muted);
   display: flex;
   align-items: center;
 }
@@ -51,31 +175,30 @@
   aspect-ratio: 1;
   min-height: 1.35rem;
   border-radius: 4px;
-  border: 1px solid #2e2e3a;
-  background: #1b1b24;
+  border: 1px solid var(--dm-border-subtle);
+  background: var(--dm-bg);
   cursor: pointer;
   padding: 0;
   transition:
-    background 0.06s ease,
-    border-color 0.06s ease,
-    box-shadow 0.06s ease;
+    background 0.08s ease,
+    border-color 0.08s ease;
 }
 
 .cell:hover {
-  border-color: #4a4a5c;
+  border-color: var(--dm-border);
 }
 
 .cellOn {
-  background: linear-gradient(180deg, #f0d24a 0%, #c9a227 100%);
-  border-color: #8f7719;
-  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.25);
+  background: var(--dm-cell-on);
+  border-color: #a16207;
 }
 
 .cellPlay {
-  outline: 1px solid rgba(245, 215, 66, 0.35);
+  outline: 1px solid var(--dm-accent);
+  outline-offset: 0;
 }
 
 .cell:focus-visible {
-  outline: 2px solid #f5d742;
+  outline: 2px solid var(--dm-focus);
   outline-offset: 1px;
 }

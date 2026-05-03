@@ -5,22 +5,22 @@
 }
 
 .header {
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
 }
 
 .title {
   font-size: 1.35rem;
-  letter-spacing: 0.04em;
+  letter-spacing: -0.02em;
   font-weight: 700;
-  color: #f2f2fa;
+  color: var(--dm-text);
 }
 
 .sub {
-  margin-top: 0.35rem;
-  font-size: 0.9rem;
-  color: #9a9aac;
+  margin-top: 0.4rem;
+  font-size: 0.92rem;
+  color: var(--dm-text-muted);
   max-width: 42rem;
-  line-height: 1.45;
+  line-height: 1.5;
 }
 
 .hiddenFile {
@@ -32,4 +32,57 @@
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
   border: 0;
+}
+
+.programRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 1rem 1.25rem;
+  margin-top: 0.75rem;
+}
+
+.keyboardColumn {
+  flex: 1 1 0%;
+  min-width: 0;
+  align-self: flex-start;
+}
+
+.gridColumn {
+  flex: 1 1 0%;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+@media (min-width: 721px) {
+  .programRow {
+    flex-wrap: nowrap;
+  }
+
+  .gridColumn {
+    flex: 1 1 0%;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+}
+
+@media (max-width: 720px) {
+  .programRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .keyboardColumn {
+    align-self: stretch;
+  }
+
+  .gridColumn {
+    flex: 0 1 auto;
+    overflow: visible;
+    overflow-x: auto;
+    min-height: unset;
+  }
 }

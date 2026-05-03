@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "808-style drum machine",
+  title: "80808 Drum Machine",
   description:
     "Browser sequencer inspired by classic drum machines — twelve voices, sixteen steps, keyboard pads.",
 };

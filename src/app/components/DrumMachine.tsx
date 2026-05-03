@@ -1,9 +1,16 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  startTransition,
+} from "react";
 import { playVoice, resumeAudioContext } from "@/audio/drumKit";
 import { secondsPerStep } from "@/audio/sequencer";
-import { voiceForKey } from "@/keymap";
+import { voiceForKeyboardEvent } from "@/keymap";
 import { BUILT_IN_PRESETS } from "@/presets";
 import {
   clearPattern,
@@ -15,7 +22,7 @@ import {
 import { VOICES } from "@/voices";
 import type { VoiceId } from "@/voices";
 import { KeyboardMapLegend } from "@/components/KeyboardMapLegend";
-import { MachineGraphic } from "@/components/MachineGraphic";
+import { Tr808Panel } from "@/components/Tr808Panel";
 import { PresetPicker } from "@/components/PresetPicker";
 import { StepGrid } from "@/components/StepGrid";
 import { Transport } from "@/components/Transport";
@@ -37,12 +44,43 @@ function loadStored(): BeatPattern | null {
 }
 
 export function DrumMachine() {
-  const [pattern, setPattern] = useState<BeatPattern>(
-    () => loadStored() ?? createEmptyPattern(),
-  );
+  const [pattern, setPattern] = useState<BeatPattern>(() => createEmptyPattern());
+
+  useEffect(() => {
+    const stored = loadStored();
+    if (stored) startTransition(() => setPattern(stored));
+  }, []);
+
   const [playing, setPlaying] = useState(false);
   const [playhead, setPlayhead] = useState<number | null>(null);
   const [pressed, setPressed] = useState<Partial<Record<VoiceId, boolean>>>({});
+
+  const keyboardColumnRef = useRef<HTMLDivElement>(null);
+  const [programRowSideBySide, setProgramRowSideBySide] = useState(false);
+  const [keyboardColumnHeight, setKeyboardColumnHeight] = useState<number | undefined>(
+    undefined,
+  );
+
+  useLayoutEffect(() => {
+    const mq = window.matchMedia("(min-width: 721px)");
+    const sync = () => setProgramRowSideBySide(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+
+  useLayoutEffect(() => {
+    const el = keyboardColumnRef.current;
+    if (!programRowSideBySide || !el) {
+      setKeyboardColumnHeight(undefined);
+      return;
+    }
+    const measure = () => setKeyboardColumnHeight(el.getBoundingClientRect().height);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [programRowSideBySide]);
 
   const audioCtxRef = useRef<AudioContext | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -95,25 +133,51 @@ export function DrumMachine() {
   }, []);
 
   useEffect(() => {
+    /** Block pads while typing in form fields (use activeElement — reliable with capture-phase listeners). */
+    const typing = () => {
+      const el = document.activeElement;
+      return (
+        el instanceof HTMLElement &&
+        Boolean(
+          el.closest(
+            'input, textarea, select, [contenteditable="true"], [role="textbox"]',
+          ),
+        )
+      );
+    };
+
     const onKeyDown = (e: KeyboardEvent) => {
-      const v = voiceForKey(e.key);
+      if (typing()) return;
+      if (e.code === "Space" || e.key === " ") {
+        if (e.repeat) return;
+        e.preventDefault();
+        if (playingRef.current) {
+          setPlaying(false);
+          setPlayhead(null);
+        } else {
+          void ensureCtx().then(() => setPlaying(true));
+        }
+        return;
+      }
+      const v = voiceForKeyboardEvent(e);
       if (!v || e.repeat) return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       e.preventDefault();
       void beginVoice(v);
     };
     const onKeyUp = (e: KeyboardEvent) => {
-      const v = voiceForKey(e.key);
+      if (typing()) return;
+      const v = voiceForKeyboardEvent(e);
       if (!v) return;
       endVoice(v);
     };
-    window.addEventListener("keydown", onKeyDown);
-    window.addEventListener("keyup", onKeyUp);
+    window.addEventListener("keydown", onKeyDown, { capture: true });
+    window.addEventListener("keyup", onKeyUp, { capture: true });
     return () => {
-      window.removeEventListener("keydown", onKeyDown);
-      window.removeEventListener("keyup", onKeyUp);
+      window.removeEventListener("keydown", onKeyDown, { capture: true });
+      window.removeEventListener("keyup", onKeyUp, { capture: true });
     };
-  }, [beginVoice, endVoice]);
+  }, [beginVoice, endVoice, ensureCtx]);
 
   useEffect(() => {
     if (!playing) return;
@@ -223,19 +287,47 @@ export function DrumMachine() {
         onChange={onFile}
       />
       <header className={styles.header}>
-        <h1 className={styles.title}>808-style drum machine</h1>
+        <h1 className={styles.title}>80808 Drum Machine</h1>
         <p className={styles.sub}>
-          Sixteen steps, twelve voices, keyboard-playable pads — save patterns as JSON.
+          Program the step grid, play pads with 1–6 and Q–Y, save patterns as JSON.
         </p>
       </header>
 
-      <MachineGraphic
+      <Tr808Panel
         pressed={pressed}
         onPadDown={(v) => void beginVoice(v)}
         onPadUp={endVoice}
+        playing={playing}
+        onPlay={onPlay}
+        onStop={onStop}
+        playhead={playing ? playhead : null}
+        patternName={pattern.name}
+        bpm={pattern.bpm}
       />
 
-      <KeyboardMapLegend pressed={pressed} />
+      <div className={styles.programRow}>
+        <div ref={keyboardColumnRef} className={styles.keyboardColumn}>
+          <KeyboardMapLegend pressed={pressed} embedded />
+        </div>
+        <div
+          className={styles.gridColumn}
+          style={
+            programRowSideBySide &&
+            keyboardColumnHeight != null &&
+            keyboardColumnHeight > 0
+              ? { height: keyboardColumnHeight, minHeight: keyboardColumnHeight }
+              : undefined
+          }
+        >
+          <StepGrid
+            steps={pattern.steps}
+            playhead={playing ? playhead : null}
+            onToggle={onToggle}
+            compact
+            fillHeight={programRowSideBySide}
+          />
+        </div>
+      </div>
 
       <Transport
         name={pattern.name}
@@ -253,12 +345,6 @@ export function DrumMachine() {
       <PresetPicker
         presets={BUILT_IN_PRESETS}
         onSelect={(p) => setPattern(p)}
-      />
-
-      <StepGrid
-        steps={pattern.steps}
-        playhead={playing ? playhead : null}
-        onToggle={onToggle}
       />
     </div>
   );
