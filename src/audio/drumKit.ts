@@ -240,12 +240,48 @@ export function createBrowserAudioContext(): AudioContext {
   return new Ctor();
 }
 
+const oneSampleSilent = new WeakMap<AudioContext, AudioBuffer>();
+const silentPrimed = new WeakSet<AudioContext>();
+
+function getOneSampleSilentBuffer(ctx: AudioContext): AudioBuffer {
+  let b = oneSampleSilent.get(ctx);
+  if (!b) {
+    b = ctx.createBuffer(1, 1, ctx.sampleRate);
+    oneSampleSilent.set(ctx, b);
+  }
+  return b;
+}
+
 /**
  * iOS Safari only unlocks audio when `resume()` is invoked in the same turn as the
  * user gesture (tap/click). Do not `await` before this from a pointer handler.
  */
 export function unlockAudioContext(ctx: AudioContext): void {
   if (ctx.state === "suspended") void ctx.resume();
+}
+
+/**
+ * Resume if needed and play a near-silent click into the destination. Many iOS
+ * versions only fully "open" the audio graph after a buffer runs in the gesture.
+ * Call synchronously from touch/pointer handlers (not from delayed `click` alone).
+ */
+export function primeAudioContext(ctx: AudioContext): void {
+  if (ctx.state !== "running") void ctx.resume();
+  if (silentPrimed.has(ctx)) return;
+  silentPrimed.add(ctx);
+  try {
+    const src = ctx.createBufferSource();
+    src.buffer = getOneSampleSilentBuffer(ctx);
+    const g = ctx.createGain();
+    g.gain.value = 0.0001;
+    src.connect(g);
+    g.connect(ctx.destination);
+    const t = ctx.currentTime;
+    src.start(t);
+    src.stop(t + 0.002);
+  } catch {
+    /* ignore */
+  }
 }
 
 /** Await running state — avoid between user gesture and first `playVoice` on iOS; use `unlockAudioContext` in handlers. */

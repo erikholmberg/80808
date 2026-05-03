@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import type { VoiceId } from "@/voices";
 import { VOICES } from "@/voices";
 import styles from "./Tr808Panel.module.css";
@@ -27,6 +28,13 @@ export function Tr808Panel({
   patternName = "Untitled",
   bpm,
 }: Tr808PanelProps) {
+  const playFromPointer = useRef(false);
+
+  const togglePlay = () => {
+    if (playing) onStop();
+    else onPlay();
+  };
+
   return (
     <section className={styles.panel} aria-label="Drum machine">
       <div className={styles.topBar}>
@@ -37,7 +45,18 @@ export function Tr808Panel({
         <button
           type="button"
           className={styles.transport}
-          onClick={() => (playing ? onStop() : onPlay())}
+          onPointerDown={(e) => {
+            if (e.pointerType === "mouse" && e.buttons !== 1) return;
+            playFromPointer.current = true;
+            togglePlay();
+          }}
+          onClick={() => {
+            if (playFromPointer.current) {
+              playFromPointer.current = false;
+              return;
+            }
+            togglePlay();
+          }}
         >
           {playing ? "Stop" : "Play"}
         </button>
@@ -68,28 +87,15 @@ export function Tr808Panel({
             className={`${styles.pad} ${pressed[v] ? styles.padDown : ""}`}
             aria-pressed={Boolean(pressed[v])}
             aria-label={`${v} pad`}
-            onPointerDown={(e) => {
-              /* Avoid preventDefault on touch — iOS ties Web Audio unlock to the gesture; default touch handling helps. */
-              (e.target as HTMLButtonElement).setPointerCapture(e.pointerId);
+            onPointerDown={() => {
               onPadDown(v);
             }}
-            onPointerUp={(e) => {
-              try {
-                (e.target as HTMLButtonElement).releasePointerCapture(e.pointerId);
-              } catch {
-                /* noop */
-              }
+            onPointerUp={() => {
               onPadUp(v);
             }}
-            onPointerCancel={(e) => {
-              try {
-                (e.target as HTMLButtonElement).releasePointerCapture(e.pointerId);
-              } catch {
-                /* noop */
-              }
+            onPointerCancel={() => {
               onPadUp(v);
             }}
-            onLostPointerCapture={() => onPadUp(v)}
           >
             {v}
           </button>

@@ -1,3 +1,6 @@
+"use client";
+
+import { useRef } from "react";
 import styles from "./Transport.module.css";
 
 type Props = {
@@ -25,6 +28,13 @@ export function Transport({
   onSaveFile,
   onImportClick,
 }: Props) {
+  const playFromPointer = useRef(false);
+
+  const togglePlay = () => {
+    if (playing) onStop();
+    else onPlay();
+  };
+
   return (
     <section className={styles.bar} aria-label="Transport">
       <label className={styles.field}>
@@ -51,7 +61,18 @@ export function Transport({
         <button
           type="button"
           className={styles.btnPrimary}
-          onClick={playing ? onStop : onPlay}
+          onPointerDown={(e) => {
+            if (e.pointerType === "mouse" && e.buttons !== 1) return;
+            playFromPointer.current = true;
+            togglePlay();
+          }}
+          onClick={() => {
+            if (playFromPointer.current) {
+              playFromPointer.current = false;
+              return;
+            }
+            togglePlay();
+          }}
         >
           {playing ? "Stop" : "Play"}
         </button>

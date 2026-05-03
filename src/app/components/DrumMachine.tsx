@@ -11,7 +11,7 @@ import {
 import {
   createBrowserAudioContext,
   playVoice,
-  unlockAudioContext,
+  primeAudioContext,
 } from "@/audio/drumKit";
 import { secondsPerStep } from "@/audio/sequencer";
 import { voiceForKeyboardEvent } from "@/keymap";
@@ -111,15 +111,29 @@ export function DrumMachine() {
     }
   }, [pattern]);
 
-  /** Create context if needed and request resume — call synchronously from user input (iOS). */
+  /** Create context if needed and prime output — call synchronously from user input (iOS). */
   const touchCtx = useCallback((): AudioContext => {
     if (!audioCtxRef.current) {
       audioCtxRef.current = createBrowserAudioContext();
     }
     const ctx = audioCtxRef.current;
-    unlockAudioContext(ctx);
+    primeAudioContext(ctx);
     return ctx;
   }, []);
+
+  /** First touch anywhere primes the graph; iOS often delays `click` past the user-activation window. */
+  useEffect(() => {
+    const onTouchStart = () => {
+      try {
+        touchCtx();
+      } catch {
+        /* ignore */
+      }
+      window.removeEventListener("touchstart", onTouchStart, { capture: true });
+    };
+    window.addEventListener("touchstart", onTouchStart, { capture: true, passive: true });
+    return () => window.removeEventListener("touchstart", onTouchStart, { capture: true });
+  }, [touchCtx]);
 
   const beginVoice = useCallback((v: VoiceId) => {
     const ctx = touchCtx();
