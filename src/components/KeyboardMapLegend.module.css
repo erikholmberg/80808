@@ -1,0 +1,80 @@
+.wrap {
+  margin-top: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #25252e 0%, #1a1a22 100%);
+  border: 1px solid #333340;
+}
+
+.title {
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #8e8e9e;
+  margin-bottom: 0.65rem;
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.chip {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  padding: 0.35rem 0.55rem;
+  border-radius: 8px;
+  border: 1px solid #3a3a48;
+  background: #14141a;
+  min-width: 5.5rem;
+  transition:
+    box-shadow 0.08s ease,
+    border-color 0.08s ease,
+    background 0.08s ease;
+}
+
+.chipActive {
+  border-color: #f5d742;
+  box-shadow:
+    0 0 0 1px rgba(245, 215, 66, 0.35),
+    0 0 14px rgba(245, 215, 66, 0.25);
+  background: #221f14;
+}
+
+.kbd {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.85rem;
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  background: #0e0e12;
+  border: 1px solid #2e2e38;
+  color: #eaeaf2;
+}
+
+.chipActive .kbd {
+  border-color: #c9a227;
+  color: #fff8d4;
+}
+
+.label {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #d8d8e6;
+}
+
+.hint {
+  font-size: 0.65rem;
+  color: #7a7a8c;
+  line-height: 1.2;
+  max-width: 8rem;
+}
