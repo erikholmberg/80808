@@ -14,6 +14,14 @@
   text-align: left;
 }
 
+.empty {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--dm-text-muted);
+  line-height: 1.45;
+  max-width: 36rem;
+}
+
 .list {
   list-style: none;
   display: grid;
@@ -38,10 +46,13 @@
   }
 }
 
-.list li {
+.card {
+  position: relative;
   margin: 0;
   display: flex;
   flex-direction: column;
+  flex: 1 1 auto;
+  align-self: stretch;
   min-height: 0;
 }
 
@@ -53,7 +64,7 @@
   align-self: stretch;
   min-height: 0;
   gap: 0.15rem;
-  padding: 0.5rem 0.75rem;
+  padding: 0.5rem 2.25rem 0.5rem 0.75rem;
   width: 100%;
   min-width: 0;
   text-align: left;
@@ -89,4 +100,55 @@
   margin-top: auto;
   font-size: 0.7rem;
   color: var(--dm-text-muted);
+}
+
+.deleteIconBtn {
+  position: absolute;
+  bottom: 0.35rem;
+  right: 0.35rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  margin: 0;
+  border: none;
+  border-radius: var(--dm-radius-sm);
+  background: var(--dm-surface);
+  color: var(--dm-text-muted);
+  cursor: pointer;
+  box-shadow: 0 0 0 1px var(--dm-border-subtle);
+  opacity: 0.4;
+  transition:
+    opacity 0.12s ease,
+    color 0.12s ease,
+    background 0.12s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .deleteIconBtn {
+    opacity: 0;
+  }
+
+  .card:hover .deleteIconBtn {
+    opacity: 1;
+  }
+}
+
+.deleteIconBtn:hover {
+  color: #f87171;
+  background: var(--dm-elevated);
+}
+
+.deleteIconBtn:focus-visible {
+  opacity: 1;
+  outline: 2px solid var(--dm-focus);
+  outline-offset: 1px;
+}
+
+.trashIcon {
+  display: block;
+  flex-shrink: 0;
 }

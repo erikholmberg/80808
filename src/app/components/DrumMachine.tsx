@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
   startTransition,
+  useSyncExternalStore,
 } from "react";
 import {
   createBrowserAudioContext,
@@ -23,12 +24,19 @@ import {
   toggleStep,
   type BeatPattern,
 } from "@/state/pattern";
+import {
+  loadSavedPatterns,
+  persistSavedPatterns,
+  type SavedPatternEntry,
+} from "@/state/savedPatterns";
 import { VOICES } from "@/voices";
 import type { VoiceId } from "@/voices";
 import { KeyboardMapLegend } from "@/components/KeyboardMapLegend";
 import { Tr808Panel } from "@/components/Tr808Panel";
 import { PresetPicker } from "@/components/PresetPicker";
 import { StepGrid } from "@/components/StepGrid";
+import { SavedPatternsPanel } from "@/components/SavedPatternsPanel";
+import { SongBeatPanel } from "@/components/SongBeatPanel";
 import { Transport } from "@/components/Transport";
 import styles from "./DrumMachine.module.css";
 
@@ -55,6 +63,18 @@ export function DrumMachine() {
     if (stored) startTransition(() => setPattern(stored));
   }, []);
 
+  const [savedEntries, setSavedEntries] = useState<SavedPatternEntry[]>([]);
+
+  useEffect(() => {
+    startTransition(() => {
+      setSavedEntries(loadSavedPatterns());
+    });
+  }, []);
+
+  useEffect(() => {
+    persistSavedPatterns(savedEntries);
+  }, [savedEntries]);
+
   const [playing, setPlaying] = useState(false);
   const [playhead, setPlayhead] = useState<number | null>(null);
   const [pressed, setPressed] = useState<Partial<Record<VoiceId, boolean>>>({});
@@ -65,17 +85,19 @@ export function DrumMachine() {
     undefined,
   );
 
-  const [showIOSAudioHint, setShowIOSAudioHint] = useState(false);
-
-  useEffect(() => {
-    const nav = navigator as Navigator & { audioSession?: unknown };
-    const hasAudioSession = typeof nav.audioSession !== "undefined";
-    const ua = navigator.userAgent;
-    const iOSDevice =
-      /iPad|iPhone|iPod/.test(ua) ||
-      (navigator.platform === "MacIntel" && (navigator.maxTouchPoints ?? 0) > 1);
-    setShowIOSAudioHint(iOSDevice && !hasAudioSession);
-  }, []);
+  const showIOSAudioHint = useSyncExternalStore(
+    () => () => {},
+    () => {
+      const nav = navigator as Navigator & { audioSession?: unknown };
+      const hasAudioSession = typeof nav.audioSession !== "undefined";
+      const ua = navigator.userAgent;
+      const iOSDevice =
+        /iPad|iPhone|iPod/.test(ua) ||
+        (navigator.platform === "MacIntel" && (navigator.maxTouchPoints ?? 0) > 1);
+      return iOSDevice && !hasAudioSession;
+    },
+    () => false,
+  );
 
   useLayoutEffect(() => {
     const mq = window.matchMedia("(min-width: 721px)");
@@ -296,6 +318,21 @@ export function DrumMachine() {
 
   const onImportClick = () => fileRef.current?.click();
 
+  const savePatternToLibrary = useCallback((p: BeatPattern) => {
+    const id =
+      typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : `saved-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+    const entry: SavedPatternEntry = {
+      id,
+      pattern: {
+        ...p,
+        steps: p.steps.map((row) => [...row]),
+      },
+    };
+    setSavedEntries((prev) => [entry, ...prev]);
+  }, []);
+
   const onFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -337,6 +374,16 @@ export function DrumMachine() {
           </p>
         ) : null}
       </header>
+
+      <SongBeatPanel
+        onApplyPattern={(p) =>
+          setPattern({
+            ...p,
+            steps: p.steps.map((row) => [...row]),
+          })
+        }
+        onSaveToLibrary={savePatternToLibrary}
+      />
 
       <Tr808Panel
         pressed={pressed}
@@ -387,9 +434,25 @@ export function DrumMachine() {
         onImportClick={onImportClick}
       />
 
+      <SavedPatternsPanel
+        entries={savedEntries}
+        onSelect={(p) =>
+          setPattern({
+            ...p,
+            steps: p.steps.map((row) => [...row]),
+          })
+        }
+        onDelete={(id) => setSavedEntries((prev) => prev.filter((e) => e.id !== id))}
+      />
+
       <PresetPicker
         presets={BUILT_IN_PRESETS}
-        onSelect={(p) => setPattern(p)}
+        onSelect={(p) =>
+          setPattern({
+            ...p,
+            steps: p.steps.map((row) => [...row]),
+          })
+        }
       />
     </div>
   );

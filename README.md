@@ -10,6 +10,7 @@ A browser-based drum machine built with **Next.js** and the **Web Audio API**. I
 - **Transport** — play/stop, pattern name, BPM, clear pattern, **save pattern as JSON**, and **import JSON** to load a beat from a file.
 - **Starter patterns** — load built-in presets from the preset list.
 - **Persistence** — your pattern is **autosaved in the browser** (`localStorage`) so it comes back on the next visit.
+- **Song to 808** — enter **artist** and **song**; the app looks up an **iTunes / Apple Music preview** clip via the public Search API, analyzes that audio in the browser, and loads a one-bar groove into the sequencer (optional **Dictate** for the song field where supported).
 
 ## Run locally
 
