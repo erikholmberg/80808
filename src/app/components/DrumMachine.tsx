@@ -37,7 +37,6 @@ import { PresetPicker } from "@/components/PresetPicker";
 import { StepGrid } from "@/components/StepGrid";
 import { SavedPatternsPanel } from "@/components/SavedPatternsPanel";
 import { SongBeatPanel } from "@/components/SongBeatPanel";
-import { Transport } from "@/components/Transport";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import styles from "./DrumMachine.module.css";
 
@@ -399,8 +398,13 @@ export function DrumMachine() {
         onPlay={onPlay}
         onStop={onStop}
         playhead={playing ? playhead : null}
-        patternName={pattern.name}
+        name={pattern.name}
+        onNameChange={(name) => setPattern((p) => ({ ...p, name }))}
         bpm={pattern.bpm}
+        onBpmChange={onBpmChange}
+        onClear={onClear}
+        onSaveFile={onSaveFile}
+        onImportClick={onImportClick}
       />
 
       <div className={styles.programRow}>
@@ -426,19 +430,6 @@ export function DrumMachine() {
           />
         </div>
       </div>
-
-      <Transport
-        name={pattern.name}
-        onNameChange={(name) => setPattern((p) => ({ ...p, name }))}
-        bpm={pattern.bpm}
-        onBpmChange={onBpmChange}
-        playing={playing}
-        onPlay={onPlay}
-        onStop={onStop}
-        onClear={onClear}
-        onSaveFile={onSaveFile}
-        onImportClick={onImportClick}
-      />
 
       <SavedPatternsPanel
         entries={savedEntries}

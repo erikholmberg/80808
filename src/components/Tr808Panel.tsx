@@ -13,8 +13,13 @@ export type Tr808PanelProps = {
   onPlay: () => void;
   onStop: () => void;
   playhead: number | null;
-  patternName?: string;
+  name: string;
+  onNameChange: (name: string) => void;
   bpm: number;
+  onBpmChange: (bpm: number) => void;
+  onClear: () => void;
+  onSaveFile: () => void;
+  onImportClick: () => void;
 };
 
 export function Tr808Panel({
@@ -25,8 +30,13 @@ export function Tr808Panel({
   onPlay,
   onStop,
   playhead,
-  patternName = "Untitled",
+  name,
+  onNameChange,
   bpm,
+  onBpmChange,
+  onClear,
+  onSaveFile,
+  onImportClick,
 }: Tr808PanelProps) {
   const playFromPointer = useRef(false);
 
@@ -37,29 +47,58 @@ export function Tr808Panel({
 
   return (
     <section className={styles.panel} aria-label="Drum machine">
-      <div className={styles.topBar}>
-        <div className={styles.lcd}>
-          <span className={styles.lcdLine}>{patternName}</span>
-          <span className={styles.lcdSub}>{bpm} BPM</span>
+      <div className={styles.transportWrap} role="group" aria-label="Transport">
+        <div className={styles.transportBar}>
+          <label className={styles.field}>
+            <span className={styles.fieldLabel}>Pattern name</span>
+            <input
+              className={styles.input}
+              value={name}
+              onChange={(e) => onNameChange(e.target.value)}
+              maxLength={64}
+            />
+          </label>
+          <label className={styles.field}>
+            <span className={styles.fieldLabel}>BPM</span>
+            <input
+              className={styles.inputNarrow}
+              type="number"
+              min={40}
+              max={200}
+              value={bpm}
+              onChange={(e) => onBpmChange(Number(e.target.value))}
+            />
+          </label>
+          <div className={styles.transportButtons}>
+            <button
+              type="button"
+              className={styles.btnPrimary}
+              onPointerDown={(e) => {
+                if (e.pointerType === "mouse" && e.buttons !== 1) return;
+                playFromPointer.current = true;
+                togglePlay();
+              }}
+              onClick={() => {
+                if (playFromPointer.current) {
+                  playFromPointer.current = false;
+                  return;
+                }
+                togglePlay();
+              }}
+            >
+              {playing ? "Stop" : "Play"}
+            </button>
+            <button type="button" className={styles.btn} onClick={onClear}>
+              Clear pattern
+            </button>
+            <button type="button" className={styles.btn} onClick={onSaveFile}>
+              Save JSON
+            </button>
+            <button type="button" className={styles.btn} onClick={onImportClick}>
+              Load JSON
+            </button>
+          </div>
         </div>
-        <button
-          type="button"
-          className={styles.transport}
-          onPointerDown={(e) => {
-            if (e.pointerType === "mouse" && e.buttons !== 1) return;
-            playFromPointer.current = true;
-            togglePlay();
-          }}
-          onClick={() => {
-            if (playFromPointer.current) {
-              playFromPointer.current = false;
-              return;
-            }
-            togglePlay();
-          }}
-        >
-          {playing ? "Stop" : "Play"}
-        </button>
       </div>
 
       <div className={styles.steps} role="group" aria-label="Beat steps (playing indicator)">
