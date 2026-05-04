@@ -90,13 +90,13 @@ export function Tr808Panel({
               {playing ? "Stop" : "Play"}
             </button>
             <button type="button" className={styles.btn} onClick={onClear}>
-              Clear pattern
+              Clear
             </button>
             <button type="button" className={styles.btn} onClick={onSaveFile}>
-              Save JSON
+              Save
             </button>
             <button type="button" className={styles.btn} onClick={onImportClick}>
-              Load JSON
+              Load
             </button>
           </div>
         </div>
