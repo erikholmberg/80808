@@ -3,7 +3,6 @@
 import {
   useCallback,
   useEffect,
-  useLayoutEffect,
   useRef,
   useState,
   startTransition,
@@ -31,7 +30,6 @@ import {
 } from "@/state/savedPatterns";
 import { VOICES } from "@/voices";
 import type { VoiceId } from "@/voices";
-import { KeyboardMapLegend } from "@/components/KeyboardMapLegend";
 import { Tr808Panel } from "@/components/Tr808Panel";
 import { PresetPicker } from "@/components/PresetPicker";
 import { StepGrid } from "@/components/StepGrid";
@@ -79,12 +77,6 @@ export function DrumMachine() {
   const [playhead, setPlayhead] = useState<number | null>(null);
   const [pressed, setPressed] = useState<Partial<Record<VoiceId, boolean>>>({});
 
-  const keyboardColumnRef = useRef<HTMLDivElement>(null);
-  const [programRowSideBySide, setProgramRowSideBySide] = useState(false);
-  const [keyboardColumnHeight, setKeyboardColumnHeight] = useState<number | undefined>(
-    undefined,
-  );
-
   const showIOSAudioHint = useSyncExternalStore(
     () => () => {},
     () => {
@@ -98,27 +90,6 @@ export function DrumMachine() {
     },
     () => false,
   );
-
-  useLayoutEffect(() => {
-    const mq = window.matchMedia("(min-width: 721px)");
-    const sync = () => setProgramRowSideBySide(mq.matches);
-    sync();
-    mq.addEventListener("change", sync);
-    return () => mq.removeEventListener("change", sync);
-  }, []);
-
-  useLayoutEffect(() => {
-    const el = keyboardColumnRef.current;
-    if (!programRowSideBySide || !el) {
-      setKeyboardColumnHeight(undefined);
-      return;
-    }
-    const measure = () => setKeyboardColumnHeight(el.getBoundingClientRect().height);
-    measure();
-    const ro = new ResizeObserver(measure);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [programRowSideBySide]);
 
   const audioCtxRef = useRef<AudioContext | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -368,7 +339,7 @@ export function DrumMachine() {
           <div className={styles.headerIntro}>
             <h1 className={styles.title}>80808 Drum Machine</h1>
             <p className={styles.sub}>
-              Program the step grid, play pads with 1–6 and Q–Y, save patterns as JSON.
+              Program the step grid, play drums with 1–6 and Q–Y, save patterns as JSON.
             </p>
           </div>
           <ThemeToggle />
@@ -392,8 +363,6 @@ export function DrumMachine() {
 
       <Tr808Panel
         pressed={pressed}
-        onPadDown={beginVoice}
-        onPadUp={endVoice}
         playing={playing}
         onPlay={onPlay}
         onStop={onStop}
@@ -407,29 +376,24 @@ export function DrumMachine() {
         onImportClick={onImportClick}
       />
 
-      <div className={styles.programRow}>
-        <div ref={keyboardColumnRef} className={styles.keyboardColumn}>
-          <KeyboardMapLegend pressed={pressed} embedded />
-        </div>
-        <div
-          className={styles.gridColumn}
-          style={
-            programRowSideBySide &&
-            keyboardColumnHeight != null &&
-            keyboardColumnHeight > 0
-              ? { height: keyboardColumnHeight, minHeight: keyboardColumnHeight }
-              : undefined
-          }
-        >
-          <StepGrid
-            steps={pattern.steps}
-            playhead={playing ? playhead : null}
-            onToggle={onToggle}
-            compact
-            fillHeight={programRowSideBySide}
-          />
-        </div>
+      <div className={styles.sequencerSection}>
+        <StepGrid
+          steps={pattern.steps}
+          playhead={playing ? playhead : null}
+          onToggle={onToggle}
+          compact
+        />
       </div>
+
+      <PresetPicker
+        presets={BUILT_IN_PRESETS}
+        onSelect={(p) =>
+          setPattern({
+            ...p,
+            steps: p.steps.map((row) => [...row]),
+          })
+        }
+      />
 
       <SavedPatternsPanel
         entries={savedEntries}
@@ -440,16 +404,6 @@ export function DrumMachine() {
           })
         }
         onDelete={(id) => setSavedEntries((prev) => prev.filter((e) => e.id !== id))}
-      />
-
-      <PresetPicker
-        presets={BUILT_IN_PRESETS}
-        onSelect={(p) =>
-          setPattern({
-            ...p,
-            steps: p.steps.map((row) => [...row]),
-          })
-        }
       />
     </div>
   );

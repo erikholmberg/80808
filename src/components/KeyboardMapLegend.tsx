@@ -7,12 +7,14 @@ type Props = {
   pressed: Partial<Record<VoiceId, boolean>>;
   /** Remove outer spacing when placed in a composite row (e.g. beside the step grid) */
   embedded?: boolean;
+  /** Inside TR-808 panel — no duplicated card border/background */
+  nested?: boolean;
 };
 
-export function KeyboardMapLegend({ pressed, embedded }: Props) {
+export function KeyboardMapLegend({ pressed, embedded, nested }: Props) {
   return (
     <section
-      className={`${styles.wrap} ${embedded ? styles.wrapEmbedded : ""}`}
+      className={`${styles.wrap} ${embedded ? styles.wrapEmbedded : ""} ${nested ? styles.wrapNested : ""}`}
       aria-label="Keyboard mapping"
     >
       <p className={styles.title}>Computer keyboard · drum pads</p>

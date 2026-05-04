@@ -2,13 +2,11 @@
 
 import { useRef } from "react";
 import type { VoiceId } from "@/voices";
-import { VOICES } from "@/voices";
+import { KeyboardMapLegend } from "@/components/KeyboardMapLegend";
 import styles from "./Tr808Panel.module.css";
 
 export type Tr808PanelProps = {
   pressed: Partial<Record<VoiceId, boolean>>;
-  onPadDown: (voice: VoiceId) => void;
-  onPadUp: (voice: VoiceId) => void;
   playing: boolean;
   onPlay: () => void;
   onStop: () => void;
@@ -24,8 +22,6 @@ export type Tr808PanelProps = {
 
 export function Tr808Panel({
   pressed,
-  onPadDown,
-  onPadUp,
   playing,
   onPlay,
   onStop,
@@ -117,29 +113,7 @@ export function Tr808Panel({
         })}
       </div>
 
-      <p className={styles.padHint}>Pads — click or keys 1–6 and Q–Y</p>
-      <div className={styles.pads}>
-        {VOICES.map((v) => (
-          <button
-            key={v}
-            type="button"
-            className={`${styles.pad} ${pressed[v] ? styles.padDown : ""}`}
-            aria-pressed={Boolean(pressed[v])}
-            aria-label={`${v} pad`}
-            onPointerDown={() => {
-              onPadDown(v);
-            }}
-            onPointerUp={() => {
-              onPadUp(v);
-            }}
-            onPointerCancel={() => {
-              onPadUp(v);
-            }}
-          >
-            {v}
-          </button>
-        ))}
-      </div>
+      <KeyboardMapLegend pressed={pressed} nested />
     </section>
   );
 }

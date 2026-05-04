@@ -11,6 +11,14 @@
   margin-top: 0;
 }
 
+.wrapNested {
+  margin-top: 0.65rem;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+}
+
 .title {
   font-size: 0.72rem;
   letter-spacing: 0.1em;

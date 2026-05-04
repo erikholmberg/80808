@@ -159,57 +159,8 @@
   color: var(--dm-step-num);
 }
 
-.padHint {
-  font-size: 0.75rem;
-  color: var(--dm-text-dim);
-  margin-bottom: 0.5rem;
-}
-
-.pads {
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: clamp(4px, 1.2vw, 8px);
-  width: 100%;
-}
-
 @media (max-width: 640px) {
-  .pads {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-
   .steps {
     grid-template-columns: repeat(8, minmax(0, 1fr));
   }
-}
-
-.pad {
-  padding: clamp(0.35rem, 1.2vw, 0.5rem) 0.35rem;
-  border-radius: var(--dm-radius-sm);
-  border: 1px solid var(--dm-border);
-  background: var(--dm-surface-2);
-  color: var(--dm-text);
-  font-family: var(--font-geist-mono), monospace;
-  font-size: clamp(0.65rem, 2.2vw, 0.78rem);
-  font-weight: 600;
-  cursor: pointer;
-  min-width: 0;
-  transition:
-    background 0.1s ease,
-    border-color 0.1s ease;
-}
-
-.pad:hover {
-  background: var(--dm-elevated);
-  border-color: var(--dm-border-hover);
-}
-
-.pad:focus-visible {
-  outline: 2px solid var(--dm-focus);
-  outline-offset: 1px;
-}
-
-.padDown {
-  background: var(--dm-accent-muted);
-  border-color: var(--dm-accent);
-  color: var(--dm-text);
 }
