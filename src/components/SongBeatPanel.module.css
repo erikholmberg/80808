@@ -99,7 +99,7 @@
 .btnPrimary {
   background: var(--dm-accent);
   border-color: var(--dm-accent);
-  color: #fff;
+  color: var(--dm-on-accent);
 }
 
 .btnPrimary:hover:not(:disabled) {
@@ -115,8 +115,8 @@
   width: 0.95rem;
   height: 0.95rem;
   flex-shrink: 0;
-  border: 2px solid rgba(255, 255, 255, 0.35);
-  border-top-color: #fff;
+  border: 2px solid color-mix(in srgb, var(--dm-on-accent) 38%, transparent);
+  border-top-color: var(--dm-on-accent);
   border-radius: 50%;
   animation: songBeatSpin 0.65s linear infinite;
 }
@@ -169,7 +169,7 @@
 .error {
   margin: 0.5rem 0 0;
   font-size: 0.8rem;
-  color: #f87171;
+  color: var(--dm-error);
 }
 
 .micHint {

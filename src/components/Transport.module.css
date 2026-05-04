@@ -85,7 +85,7 @@
 .btnPrimary {
   border: none;
   background: var(--dm-accent);
-  color: #fff;
+  color: var(--dm-on-accent);
   font-weight: 600;
 }
 

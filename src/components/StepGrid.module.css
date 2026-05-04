@@ -190,7 +190,7 @@
 
 .cellOn {
   background: var(--dm-cell-on);
-  border-color: #a16207;
+  border-color: var(--dm-cell-on-border);
 }
 
 .cellPlay {

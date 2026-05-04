@@ -38,6 +38,7 @@ import { StepGrid } from "@/components/StepGrid";
 import { SavedPatternsPanel } from "@/components/SavedPatternsPanel";
 import { SongBeatPanel } from "@/components/SongBeatPanel";
 import { Transport } from "@/components/Transport";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import styles from "./DrumMachine.module.css";
 
 const STORAGE_KEY = "80808-beat-v1";
@@ -364,10 +365,15 @@ export function DrumMachine() {
         onChange={onFile}
       />
       <header className={styles.header}>
-        <h1 className={styles.title}>80808 Drum Machine</h1>
-        <p className={styles.sub}>
-          Program the step grid, play pads with 1–6 and Q–Y, save patterns as JSON.
-        </p>
+        <div className={styles.headerTop}>
+          <div className={styles.headerIntro}>
+            <h1 className={styles.title}>80808 Drum Machine</h1>
+            <p className={styles.sub}>
+              Program the step grid, play pads with 1–6 and Q–Y, save patterns as JSON.
+            </p>
+          </div>
+          <ThemeToggle />
+        </div>
         {showIOSAudioHint ? (
           <p className={styles.mobileAudioHint} role="note">
             iPhone / iPad: turn off silent mode if you don&apos;t hear drums.

@@ -52,7 +52,7 @@
   border-radius: var(--dm-radius-sm);
   border: none;
   background: var(--dm-accent);
-  color: #fff;
+  color: var(--dm-on-accent);
   cursor: pointer;
   transition: background 0.12s ease;
 }
@@ -100,14 +100,14 @@
 }
 
 .stepLit {
-  outline: 2px solid #fff;
+  outline: 2px solid var(--dm-step-playhead-outline);
   outline-offset: -1px;
 }
 
 .stepNum {
   font-size: clamp(0.45rem, 1.8vw, 0.55rem);
   font-weight: 600;
-  color: rgba(0, 0, 0, 0.55);
+  color: var(--dm-step-num);
 }
 
 .padHint {
