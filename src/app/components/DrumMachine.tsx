@@ -339,7 +339,8 @@ export function DrumMachine() {
           <div className={styles.headerIntro}>
             <h1 className={styles.title}>80808 Drum Machine</h1>
             <p className={styles.sub}>
-              Program the step grid, play drums with 1–6 and Q–Y, save patterns as JSON.
+              Program the step grid, play drums on the pads or with 1–6 and Q–Y, save patterns
+              as JSON.
             </p>
           </div>
           <ThemeToggle />
@@ -351,18 +352,10 @@ export function DrumMachine() {
         ) : null}
       </header>
 
-      <SongBeatPanel
-        onApplyPattern={(p) =>
-          setPattern({
-            ...p,
-            steps: p.steps.map((row) => [...row]),
-          })
-        }
-        onSaveToLibrary={savePatternToLibrary}
-      />
-
       <Tr808Panel
         pressed={pressed}
+        onPadDown={beginVoice}
+        onPadUp={endVoice}
         playing={playing}
         onPlay={onPlay}
         onStop={onStop}
@@ -393,6 +386,16 @@ export function DrumMachine() {
             steps: p.steps.map((row) => [...row]),
           })
         }
+      />
+
+      <SongBeatPanel
+        onApplyPattern={(p) =>
+          setPattern({
+            ...p,
+            steps: p.steps.map((row) => [...row]),
+          })
+        }
+        onSaveToLibrary={savePatternToLibrary}
       />
 
       <SavedPatternsPanel
