@@ -1,0 +1,52 @@
+.page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+}
+
+@keyframes drumMachineFallbackPulse {
+  50% {
+    opacity: 0.65;
+  }
+}
+
+.block {
+  border-radius: var(--dm-radius);
+  background: var(--dm-surface-2);
+  border: 1px solid var(--dm-border-subtle);
+  animation: drumMachineFallbackPulse 1.1s ease-in-out infinite;
+}
+
+.headerBar {
+  composes: block;
+  height: 5.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.panelBlock {
+  composes: block;
+  height: 14rem;
+  margin-bottom: 0.75rem;
+}
+
+.gridBlock {
+  composes: block;
+  height: 18rem;
+}
+
+.songPanel {
+  margin-top: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.songTitle {
+  composes: block;
+  height: 0.85rem;
+  width: 40%;
+  margin-bottom: 0.65rem;
+}
+
+.songBody {
+  composes: block;
+  height: 8rem;
+}

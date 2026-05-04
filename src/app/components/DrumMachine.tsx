@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import {
   useCallback,
   useEffect,
@@ -34,9 +35,14 @@ import { Tr808Panel } from "@/components/Tr808Panel";
 import { PresetPicker } from "@/components/PresetPicker";
 import { StepGrid } from "@/components/StepGrid";
 import { SavedPatternsPanel } from "@/components/SavedPatternsPanel";
-import { SongBeatPanel } from "@/components/SongBeatPanel";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { SongBeatPanelFallback } from "./DrumMachineFallback";
 import styles from "./DrumMachine.module.css";
+
+const SongBeatPanel = dynamic(
+  () => import("@/components/SongBeatPanel").then((m) => ({ default: m.SongBeatPanel })),
+  { loading: () => <SongBeatPanelFallback /> },
+);
 
 const STORAGE_KEY = "80808-beat-v1";
 
@@ -229,6 +235,7 @@ export function DrumMachine() {
         primed = true;
       }
       const scheduleAhead = 0.12;
+      let lastUiStep: number | null = null;
       while (nextStepTimeRef.current < ctx.currentTime + scheduleAhead) {
         const step = stepIndexRef.current;
         const grid = patternRef.current.steps;
@@ -238,9 +245,12 @@ export function DrumMachine() {
             playVoice(ctx, VOICES[r]!, nextStepTimeRef.current);
           }
         }
-        setPlayhead(step);
+        lastUiStep = step;
         stepIndexRef.current = (step + 1) % 16;
         nextStepTimeRef.current += sp;
+      }
+      if (lastUiStep !== null) {
+        setPlayhead(lastUiStep);
       }
       raf = requestAnimationFrame(loop);
     };
