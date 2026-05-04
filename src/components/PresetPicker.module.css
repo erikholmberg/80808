@@ -18,7 +18,7 @@
   list-style: none;
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  grid-auto-rows: minmax(5.25rem, auto);
+  grid-auto-rows: minmax(4rem, auto);
   align-items: stretch;
   gap: 0.5rem;
   margin: 0;
@@ -52,8 +52,8 @@
   flex: 1 1 auto;
   align-self: stretch;
   min-height: 0;
-  gap: 0.15rem;
-  padding: 0.5rem 0.75rem;
+  gap: 0.08rem;
+  padding: 0.38rem 0.55rem;
   width: 100%;
   min-width: 0;
   text-align: left;
@@ -80,14 +80,15 @@
 
 .name {
   font-family: var(--font-geist-mono), ui-monospace, monospace;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 600;
+  line-height: 1.25;
   overflow-wrap: anywhere;
 }
 
 .bpm {
   margin-top: auto;
-  font-size: 0.7rem;
+  font-size: 0.66rem;
   color: var(--dm-text-muted);
 }
 
