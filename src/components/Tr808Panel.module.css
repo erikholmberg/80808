@@ -115,6 +115,18 @@
   outline-offset: 1px;
 }
 
+.btnRecordActive {
+  border-color: var(--dm-accent);
+  background: var(--dm-accent-muted);
+  color: var(--dm-accent);
+  font-weight: 600;
+}
+
+.btnRecordActive:hover {
+  border-color: var(--dm-accent-hover);
+  background: var(--dm-accent-muted);
+}
+
 .steps {
   display: grid;
   grid-template-columns: repeat(16, minmax(0, 1fr));

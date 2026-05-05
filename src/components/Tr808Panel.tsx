@@ -10,8 +10,10 @@ export type Tr808PanelProps = {
   onPadDown: (voice: VoiceId) => void;
   onPadUp: (voice: VoiceId) => void;
   playing: boolean;
+  recording: boolean;
   onPlay: () => void;
   onStop: () => void;
+  onRecordToggle: () => void;
   playhead: number | null;
   name: string;
   onNameChange: (name: string) => void;
@@ -27,8 +29,10 @@ export function Tr808Panel({
   onPadDown,
   onPadUp,
   playing,
+  recording,
   onPlay,
   onStop,
+  onRecordToggle,
   playhead,
   name,
   onNameChange,
@@ -87,6 +91,14 @@ export function Tr808Panel({
               }}
             >
               {playing ? "Stop" : "Play"}
+            </button>
+            <button
+              type="button"
+              className={`${styles.btn} ${recording ? styles.btnRecordActive : ""}`}
+              aria-pressed={recording}
+              onClick={onRecordToggle}
+            >
+              Record
             </button>
             <button type="button" className={styles.btn} onClick={onClear}>
               Clear

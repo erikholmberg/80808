@@ -27,6 +27,14 @@ export function toggleStep(grid: StepGrid, row: number, col: number): StepGrid {
   return next;
 }
 
+export function setStepValue(grid: StepGrid, row: number, col: number, value: boolean): StepGrid {
+  const next = grid.map((r) => [...r]);
+  if (next[row]?.[col] !== undefined) {
+    next[row]![col] = value;
+  }
+  return next;
+}
+
 export function clearPattern(): StepGrid {
   return VOICES.map(() => Array<boolean>(STEPS).fill(false));
 }

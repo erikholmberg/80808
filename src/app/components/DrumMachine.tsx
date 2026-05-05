@@ -21,6 +21,7 @@ import {
   clearPattern,
   createEmptyPattern,
   isValidBeatPattern,
+  setStepValue,
   toggleStep,
   type BeatPattern,
 } from "@/state/pattern";
@@ -29,7 +30,7 @@ import {
   persistSavedPatterns,
   type SavedPatternEntry,
 } from "@/state/savedPatterns";
-import { VOICES } from "@/voices";
+import { VOICES, voiceIndex } from "@/voices";
 import type { VoiceId } from "@/voices";
 import { Tr808Panel } from "@/components/Tr808Panel";
 import { PresetPicker } from "@/components/PresetPicker";
@@ -80,6 +81,7 @@ export function DrumMachine() {
   }, [savedEntries]);
 
   const [playing, setPlaying] = useState(false);
+  const [recording, setRecording] = useState(false);
   const [playhead, setPlayhead] = useState<number | null>(null);
   const [pressed, setPressed] = useState<Partial<Record<VoiceId, boolean>>>({});
 
@@ -102,6 +104,8 @@ export function DrumMachine() {
 
   const patternRef = useRef(pattern);
   const playingRef = useRef(playing);
+  const recordingRef = useRef(recording);
+  const recordStepRef = useRef<number | null>(null);
 
   const stepIndexRef = useRef(0);
   const nextStepTimeRef = useRef(0);
@@ -113,6 +117,10 @@ export function DrumMachine() {
   useEffect(() => {
     playingRef.current = playing;
   }, [playing]);
+
+  useEffect(() => {
+    recordingRef.current = recording;
+  }, [recording]);
 
   useEffect(() => {
     try {
@@ -157,6 +165,25 @@ export function DrumMachine() {
     setPressed((p) => ({ ...p, [v]: true }));
   }, [touchCtx]);
 
+  const handlePadDown = useCallback(
+    (v: VoiceId) => {
+      if (recordingRef.current && playingRef.current) {
+        const row = voiceIndex(v);
+        setPattern((p) => {
+          if (!recordingRef.current || !playingRef.current) return p;
+          const col = recordStepRef.current;
+          if (col === null || p.steps[row]?.[col]) return p;
+          const steps = setStepValue(p.steps, row, col, true);
+          const next = { ...p, steps };
+          patternRef.current = next;
+          return next;
+        });
+      }
+      beginVoice(v);
+    },
+    [beginVoice],
+  );
+
   const endVoice = useCallback((v: VoiceId) => {
     setPressed((p) => {
       const n = { ...p };
@@ -187,6 +214,7 @@ export function DrumMachine() {
         if (playingRef.current) {
           setPlaying(false);
           setPlayhead(null);
+          setRecording(false);
         } else {
           touchCtx();
           setPlaying(true);
@@ -197,7 +225,7 @@ export function DrumMachine() {
       if (!v || e.repeat) return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       e.preventDefault();
-      void beginVoice(v);
+      void handlePadDown(v);
     };
     const onKeyUp = (e: KeyboardEvent) => {
       if (typing()) return;
@@ -211,7 +239,7 @@ export function DrumMachine() {
       window.removeEventListener("keydown", onKeyDown, { capture: true });
       window.removeEventListener("keyup", onKeyUp, { capture: true });
     };
-  }, [beginVoice, endVoice, touchCtx]);
+  }, [handlePadDown, endVoice, touchCtx]);
 
   useEffect(() => {
     if (!playing) return;
@@ -232,12 +260,14 @@ export function DrumMachine() {
       if (!primed) {
         nextStepTimeRef.current = ctx.currentTime + 0.05;
         stepIndexRef.current = 0;
+        recordStepRef.current = 0;
         primed = true;
       }
       const scheduleAhead = 0.12;
       let lastUiStep: number | null = null;
       while (nextStepTimeRef.current < ctx.currentTime + scheduleAhead) {
         const step = stepIndexRef.current;
+        recordStepRef.current = step;
         const grid = patternRef.current.steps;
         const sp = secondsPerStep(patternRef.current.bpm);
         for (let r = 0; r < 12; r++) {
@@ -258,6 +288,7 @@ export function DrumMachine() {
 
     return () => {
       cancelled = true;
+      recordStepRef.current = null;
       cancelAnimationFrame(raf);
     };
   }, [playing]);
@@ -274,9 +305,22 @@ export function DrumMachine() {
   const onStop = () => {
     setPlaying(false);
     setPlayhead(null);
+    setRecording(false);
   };
 
+  const onRecordToggle = useCallback(() => {
+    setRecording((was) => {
+      if (!was) {
+        touchCtx();
+        setPlaying(true);
+        return true;
+      }
+      return false;
+    });
+  }, [touchCtx]);
+
   const onClear = () => {
+    setRecording(false);
     setPattern((p) => ({ ...p, steps: clearPattern() }));
   };
 
@@ -364,11 +408,13 @@ export function DrumMachine() {
 
       <Tr808Panel
         pressed={pressed}
-        onPadDown={beginVoice}
+        onPadDown={handlePadDown}
         onPadUp={endVoice}
         playing={playing}
+        recording={recording}
         onPlay={onPlay}
         onStop={onStop}
+        onRecordToggle={onRecordToggle}
         playhead={playing ? playhead : null}
         name={pattern.name}
         onNameChange={(name) => setPattern((p) => ({ ...p, name }))}
