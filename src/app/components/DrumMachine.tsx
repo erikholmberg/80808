@@ -172,8 +172,9 @@ export function DrumMachine() {
         setPattern((p) => {
           if (!recordingRef.current || !playingRef.current) return p;
           const col = recordStepRef.current;
-          if (col === null || p.steps[row]?.[col]) return p;
-          const steps = setStepValue(p.steps, row, col, true);
+          if (col === null || p.steps[row]?.[col] === undefined) return p;
+          const on = Boolean(p.steps[row]![col]);
+          const steps = setStepValue(p.steps, row, col, !on);
           const next = { ...p, steps };
           patternRef.current = next;
           return next;
