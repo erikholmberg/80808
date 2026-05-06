@@ -32,6 +32,8 @@ import {
 } from "@/state/savedPatterns";
 import { VOICES, voiceIndex } from "@/voices";
 import type { VoiceId } from "@/voices";
+import { BeatStepIndicatorRow } from "@/components/BeatStepIndicatorRow";
+import { KeyboardMapLegend } from "@/components/KeyboardMapLegend";
 import { Tr808Panel } from "@/components/Tr808Panel";
 import { PresetPicker } from "@/components/PresetPicker";
 import { StepGrid } from "@/components/StepGrid";
@@ -80,6 +82,8 @@ export function DrumMachine() {
   const [pressed, setPressed] = useState<Partial<Record<VoiceId, boolean>>>({});
   const [saveAck, setSaveAck] = useState(false);
   const saveAckTimeoutRef = useRef(0);
+  const panelWrapRef = useRef<HTMLDivElement | null>(null);
+  const [padsDockVisible, setPadsDockVisible] = useState(false);
 
   const showIOSAudioHint = useSyncExternalStore(
     () => () => {},
@@ -126,6 +130,39 @@ export function DrumMachine() {
   }, [pattern]);
 
   useEffect(() => () => window.clearTimeout(saveAckTimeoutRef.current), []);
+
+  useEffect(() => {
+    const wrap = panelWrapRef.current;
+    if (!wrap) return;
+
+    const mq = window.matchMedia("(min-width: 721px)");
+
+    const applyIntersection = (entry: IntersectionObserverEntry) => {
+      setPadsDockVisible(!entry.isIntersecting && mq.matches);
+    };
+
+    const io = new IntersectionObserver(([entry]) => {
+      if (entry) applyIntersection(entry);
+    }, { threshold: 0 });
+
+    io.observe(wrap);
+
+    const onMq = () => {
+      if (!mq.matches) {
+        setPadsDockVisible(false);
+        return;
+      }
+      for (const e of io.takeRecords()) {
+        applyIntersection(e);
+      }
+    };
+
+    mq.addEventListener("change", onMq);
+    return () => {
+      mq.removeEventListener("change", onMq);
+      io.disconnect();
+    };
+  }, []);
 
   /** Create context if needed and prime output — call synchronously from user input (iOS). */
   const touchCtx = useCallback((): AudioContext => {
@@ -377,6 +414,22 @@ export function DrumMachine() {
 
   return (
     <div className={styles.page}>
+      {padsDockVisible ? (
+        <div className={styles.padsDock} role="region" aria-label="Compact drum pads and beat steps">
+          <div className={styles.padsDockInner}>
+            <BeatStepIndicatorRow playhead={playing ? playhead : null} density="compact" />
+            <KeyboardMapLegend
+              pressed={pressed}
+              nested
+              dense
+              singleRow
+              onPadDown={handlePadDown}
+              onPadUp={endVoice}
+            />
+          </div>
+        </div>
+      ) : null}
+
       <header className={styles.header}>
         <div className={styles.headerTop}>
           <div className={styles.headerIntro}>
@@ -395,24 +448,27 @@ export function DrumMachine() {
         ) : null}
       </header>
 
-      <Tr808Panel
-        pressed={pressed}
-        onPadDown={handlePadDown}
-        onPadUp={endVoice}
-        playing={playing}
-        recording={recording}
-        onPlay={onPlay}
-        onStop={onStop}
-        onRecordToggle={onRecordToggle}
-        playhead={playing ? playhead : null}
-        name={pattern.name}
-        onNameChange={(name) => setPattern((p) => ({ ...p, name }))}
-        bpm={pattern.bpm}
-        onBpmChange={onBpmChange}
-        onClear={onClear}
-        onSave={onSave}
-        saveAck={saveAck}
-      />
+      <div ref={panelWrapRef} className={styles.panelWrap}>
+        <Tr808Panel
+          pressed={pressed}
+          onPadDown={handlePadDown}
+          onPadUp={endVoice}
+          playing={playing}
+          recording={recording}
+          onPlay={onPlay}
+          onStop={onStop}
+          onRecordToggle={onRecordToggle}
+          playhead={playing ? playhead : null}
+          name={pattern.name}
+          onNameChange={(name) => setPattern((p) => ({ ...p, name }))}
+          bpm={pattern.bpm}
+          onBpmChange={onBpmChange}
+          onClear={onClear}
+          onSave={onSave}
+          saveAck={saveAck}
+          padsSectionInert={padsDockVisible}
+        />
+      </div>
 
       <div className={styles.sequencerSection}>
         <StepGrid

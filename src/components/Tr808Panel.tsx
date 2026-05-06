@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import type { VoiceId } from "@/voices";
+import { BeatStepIndicatorRow } from "@/components/BeatStepIndicatorRow";
 import { KeyboardMapLegend } from "@/components/KeyboardMapLegend";
 import styles from "./Tr808Panel.module.css";
 
@@ -23,6 +24,8 @@ export type Tr808PanelProps = {
   onSave: () => void;
   /** Brief visual + polite live-region feedback after Save adds a pattern to the library */
   saveAck?: boolean;
+  /** When true, pads + beat step row are non-interactive (duplicate controls shown in sticky dock) */
+  padsSectionInert?: boolean;
 };
 
 export function Tr808Panel({
@@ -42,6 +45,7 @@ export function Tr808Panel({
   onClear,
   onSave,
   saveAck = false,
+  padsSectionInert = false,
 }: Tr808PanelProps) {
   const playFromPointer = useRef(false);
 
@@ -116,28 +120,16 @@ export function Tr808Panel({
         </div>
       </div>
 
-      <div className={styles.steps} role="group" aria-label="Beat steps (playing indicator)">
-        {Array.from({ length: 16 }, (_, i) => {
-          const band = Math.min(3, Math.floor(i / 4));
-          const lit = playhead !== null && playhead === i;
-          return (
-            <div
-              key={i}
-              className={`${styles.stepCell} ${styles[`band${band}`]} ${lit ? styles.stepLit : ""}`}
-              aria-current={lit ? "step" : undefined}
-            >
-              <span className={styles.stepNum}>{i + 1}</span>
-            </div>
-          );
-        })}
+      <div {...(padsSectionInert ? { inert: true as const } : {})}>
+        <BeatStepIndicatorRow playhead={playhead} density="default" />
+        <KeyboardMapLegend
+          pressed={pressed}
+          nested
+          singleRow
+          onPadDown={onPadDown}
+          onPadUp={onPadUp}
+        />
       </div>
-
-      <KeyboardMapLegend
-        pressed={pressed}
-        nested
-        onPadDown={onPadDown}
-        onPadUp={onPadUp}
-      />
     </section>
   );
 }
