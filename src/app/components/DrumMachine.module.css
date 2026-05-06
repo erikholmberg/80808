@@ -22,10 +22,14 @@
 }
 
 .title {
-  font-size: 1.35rem;
-  letter-spacing: -0.02em;
-  font-weight: 700;
-  color: var(--dm-text);
+  margin: 0;
+}
+
+.logo {
+  display: block;
+  height: clamp(1.85rem, 4.5vw, 2.6rem);
+  width: auto;
+  max-width: min(100%, 26rem);
 }
 
 .sub {
@@ -43,17 +47,6 @@
   color: var(--dm-text-muted);
   opacity: 0.9;
   max-width: 42rem;
-}
-
-.hiddenFile {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  border: 0;
 }
 
 .sequencerSection {

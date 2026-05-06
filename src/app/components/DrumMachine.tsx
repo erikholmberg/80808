@@ -84,6 +84,8 @@ export function DrumMachine() {
   const [recording, setRecording] = useState(false);
   const [playhead, setPlayhead] = useState<number | null>(null);
   const [pressed, setPressed] = useState<Partial<Record<VoiceId, boolean>>>({});
+  const [saveAck, setSaveAck] = useState(false);
+  const saveAckTimeoutRef = useRef(0);
 
   const showIOSAudioHint = useSyncExternalStore(
     () => () => {},
@@ -100,7 +102,6 @@ export function DrumMachine() {
   );
 
   const audioCtxRef = useRef<AudioContext | null>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
 
   const patternRef = useRef(pattern);
   const playingRef = useRef(playing);
@@ -129,6 +130,8 @@ export function DrumMachine() {
       /* ignore */
     }
   }, [pattern]);
+
+  useEffect(() => () => window.clearTimeout(saveAckTimeoutRef.current), []);
 
   /** Create context if needed and prime output — call synchronously from user input (iOS). */
   const touchCtx = useCallback((): AudioContext => {
@@ -331,20 +334,6 @@ export function DrumMachine() {
     setPattern((p) => ({ ...p, bpm: n }));
   };
 
-  const onSaveFile = () => {
-    const blob = new Blob([JSON.stringify(pattern, null, 2)], {
-      type: "application/json",
-    });
-    const a = document.createElement("a");
-    const safe = pattern.name.replace(/\s+/g, "-").replace(/[^a-zA-Z0-9-_]/g, "") || "pattern";
-    a.href = URL.createObjectURL(blob);
-    a.download = `${safe}.json`;
-    a.click();
-    URL.revokeObjectURL(a.href);
-  };
-
-  const onImportClick = () => fileRef.current?.click();
-
   const savePatternToLibrary = useCallback((p: BeatPattern) => {
     const id =
       typeof crypto !== "undefined" && "randomUUID" in crypto
@@ -360,44 +349,31 @@ export function DrumMachine() {
     setSavedEntries((prev) => [entry, ...prev]);
   }, []);
 
-  const onFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      try {
-        const data: unknown = JSON.parse(String(reader.result));
-        const normalized = normalizeBeatPattern(data);
-        if (normalized) {
-          setPattern({
-            ...normalized,
-            steps: normalized.steps.map((row) => [...row]),
-          });
-        }
-      } catch {
-        /* ignore invalid */
-      }
-      e.target.value = "";
-    };
-    reader.readAsText(file);
-  };
+  const onSave = useCallback(() => {
+    savePatternToLibrary(pattern);
+    setSaveAck(true);
+    window.clearTimeout(saveAckTimeoutRef.current);
+    saveAckTimeoutRef.current = window.setTimeout(() => setSaveAck(false), 1800);
+  }, [pattern, savePatternToLibrary]);
 
   return (
     <div className={styles.page}>
-      <input
-        ref={fileRef}
-        type="file"
-        accept="application/json,.json"
-        className={styles.hiddenFile}
-        onChange={onFile}
-      />
       <header className={styles.header}>
         <div className={styles.headerTop}>
           <div className={styles.headerIntro}>
-            <h1 className={styles.title}>80808 Drum Machine</h1>
+            <h1 className={styles.title}>
+              <img
+                src="/80808-logo.svg"
+                alt="80808 Drum Machine"
+                className={styles.logo}
+                width={1527}
+                height={579}
+                decoding="async"
+              />
+            </h1>
             <p className={styles.sub}>
-              Program the step grid, play drums on the pads or with 1–6 and Q–Y, save patterns
-              as JSON.
+              Program the step grid, play drums on the pads or with 1–6 and Q–Y, and save copies
+              of patterns in this browser.
             </p>
           </div>
           <ThemeToggle />
@@ -424,8 +400,8 @@ export function DrumMachine() {
         bpm={pattern.bpm}
         onBpmChange={onBpmChange}
         onClear={onClear}
-        onSaveFile={onSaveFile}
-        onImportClick={onImportClick}
+        onSave={onSave}
+        saveAck={saveAck}
       />
 
       <div className={styles.sequencerSection}>

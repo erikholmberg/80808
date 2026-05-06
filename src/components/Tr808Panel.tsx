@@ -20,8 +20,9 @@ export type Tr808PanelProps = {
   bpm: number;
   onBpmChange: (bpm: number) => void;
   onClear: () => void;
-  onSaveFile: () => void;
-  onImportClick: () => void;
+  onSave: () => void;
+  /** Brief visual + polite live-region feedback after Save adds a pattern to the library */
+  saveAck?: boolean;
 };
 
 export function Tr808Panel({
@@ -39,8 +40,8 @@ export function Tr808Panel({
   bpm,
   onBpmChange,
   onClear,
-  onSaveFile,
-  onImportClick,
+  onSave,
+  saveAck = false,
 }: Tr808PanelProps) {
   const playFromPointer = useRef(false);
 
@@ -103,12 +104,14 @@ export function Tr808Panel({
             <button type="button" className={styles.btn} onClick={onClear}>
               Clear
             </button>
-            <button type="button" className={styles.btn} onClick={onSaveFile}>
+            <button type="button" className={styles.btn} onClick={onSave}>
               Save
             </button>
-            <button type="button" className={styles.btn} onClick={onImportClick}>
-              Load
-            </button>
+            {saveAck ? (
+              <span className={styles.saveAck} aria-live="polite" role="status">
+                Saved
+              </span>
+            ) : null}
           </div>
         </div>
       </div>

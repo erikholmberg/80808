@@ -71,7 +71,15 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+  align-items: center;
   margin-left: auto;
+}
+
+.saveAck {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--dm-accent);
+  padding: 0.25rem 0.35rem;
 }
 
 .btn,

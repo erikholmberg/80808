@@ -48,7 +48,10 @@ export function SavedPatternsPanel({ entries, onSelect, onDelete }: Props) {
     <section className={styles.wrap} aria-label="Saved patterns">
       <h2 className={styles.heading}>Saved patterns</h2>
       {entries.length === 0 ? (
-        <p className={styles.empty}>No saved patterns yet. Generate from a song, then use Save to Saved patterns.</p>
+        <p className={styles.empty}>
+          No saved patterns yet. Use <strong>Save</strong> on the transport bar or generate from a song, then{' '}
+          <strong>Save to Saved patterns</strong>.
+        </p>
       ) : (
         <ul className={styles.list}>
           {entries.map((e) => (
