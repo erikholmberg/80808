@@ -2,10 +2,21 @@ import type { VoiceId } from "../voices";
 
 let noiseBuffer: AudioBuffer | null = null;
 
+/** Step cell 1 = normal, 2 = accent. Accent uses full scale; normal is ~6 dB softer so the contrast is audible. */
 function levelFromVelocity(velocity: number): number {
   if (velocity >= 2) return 1;
   if (velocity <= 0) return 0;
-  return 0.72;
+  return 0.5;
+}
+
+function clampGainMul(m: number): number {
+  if (!Number.isFinite(m)) return 1;
+  return Math.max(0, Math.min(1, m));
+}
+
+/** Normal/accent level × per-step mix (fourth dimension). */
+function effectivePeak(velocity: number, gainMul: number): number {
+  return levelFromVelocity(velocity) * clampGainMul(gainMul);
 }
 
 function getNoise(ctx: AudioContext): AudioBuffer {
@@ -32,26 +43,26 @@ function gainEnv(
   return g;
 }
 
-function playBD(ctx: AudioContext, t: number, velocity: number): void {
+function playBD(ctx: AudioContext, t: number, velocity: number, gainMul: number): void {
   const osc = ctx.createOscillator();
   osc.type = "sine";
   osc.frequency.setValueAtTime(160, t);
   osc.frequency.exponentialRampToValueAtTime(48, t + 0.12);
-  const g = gainEnv(ctx, t, 0.95 * levelFromVelocity(velocity), 0.002, 0.22);
+  const g = gainEnv(ctx, t, 0.95 * effectivePeak(velocity, gainMul), 0.002, 0.22);
   osc.connect(g);
   g.connect(ctx.destination);
   osc.start(t);
   osc.stop(t + 0.35);
 }
 
-function playSD(ctx: AudioContext, t: number, velocity: number): void {
+function playSD(ctx: AudioContext, t: number, velocity: number, gainMul: number): void {
   const src = ctx.createBufferSource();
   src.buffer = getNoise(ctx);
   const bp = ctx.createBiquadFilter();
   bp.type = "bandpass";
   bp.frequency.setValueAtTime(1800, t);
   bp.Q.setValueAtTime(1.2, t);
-  const vel = levelFromVelocity(velocity);
+  const vel = effectivePeak(velocity, gainMul);
   const ng = gainEnv(ctx, t, 0.55 * vel, 0.001, 0.12);
   src.connect(bp);
   bp.connect(ng);
@@ -68,85 +79,85 @@ function playSD(ctx: AudioContext, t: number, velocity: number): void {
   tone.stop(t + 0.08);
 }
 
-function playTom(ctx: AudioContext, t: number, startHz: number, velocity: number): void {
+function playTom(ctx: AudioContext, t: number, startHz: number, velocity: number, gainMul: number): void {
   const osc = ctx.createOscillator();
   osc.type = "sine";
   osc.frequency.setValueAtTime(startHz, t);
   osc.frequency.exponentialRampToValueAtTime(startHz * 0.35, t + 0.12);
-  const g = gainEnv(ctx, t, 0.45 * levelFromVelocity(velocity), 0.002, 0.18);
+  const g = gainEnv(ctx, t, 0.45 * effectivePeak(velocity, gainMul), 0.002, 0.18);
   osc.connect(g);
   g.connect(ctx.destination);
   osc.start(t);
   osc.stop(t + 0.25);
 }
 
-function playRS(ctx: AudioContext, t: number, velocity: number): void {
+function playRS(ctx: AudioContext, t: number, velocity: number, gainMul: number): void {
   const src = ctx.createBufferSource();
   src.buffer = getNoise(ctx);
   const hp = ctx.createBiquadFilter();
   hp.type = "highpass";
   hp.frequency.setValueAtTime(1200, t);
-  const g = gainEnv(ctx, t, 0.5 * levelFromVelocity(velocity), 0.0005, 0.04);
+  const g = gainEnv(ctx, t, 0.5 * effectivePeak(velocity, gainMul), 0.0005, 0.04);
   src.connect(hp);
   hp.connect(g);
   g.connect(ctx.destination);
   src.start(t, 0, 0.05);
 }
 
-function playCP(ctx: AudioContext, t: number, velocity: number): void {
+function playCP(ctx: AudioContext, t: number, velocity: number, gainMul: number): void {
   const src = ctx.createBufferSource();
   src.buffer = getNoise(ctx);
   const bp = ctx.createBiquadFilter();
   bp.type = "bandpass";
   bp.frequency.setValueAtTime(1400, t);
-  const g = gainEnv(ctx, t, 0.6 * levelFromVelocity(velocity), 0.002, 0.08);
+  const g = gainEnv(ctx, t, 0.6 * effectivePeak(velocity, gainMul), 0.002, 0.08);
   src.connect(bp);
   bp.connect(g);
   g.connect(ctx.destination);
   src.start(t, 0, 0.1);
 }
 
-function playMA(ctx: AudioContext, t: number, velocity: number): void {
+function playMA(ctx: AudioContext, t: number, velocity: number, gainMul: number): void {
   const src = ctx.createBufferSource();
   src.buffer = getNoise(ctx);
   const hp = ctx.createBiquadFilter();
   hp.type = "highpass";
   hp.frequency.setValueAtTime(6000, t);
-  const g = gainEnv(ctx, t, 0.25 * levelFromVelocity(velocity), 0.001, 0.03);
+  const g = gainEnv(ctx, t, 0.25 * effectivePeak(velocity, gainMul), 0.001, 0.03);
   src.connect(hp);
   hp.connect(g);
   g.connect(ctx.destination);
   src.start(t, 0, 0.04);
 }
 
-function playCH(ctx: AudioContext, t: number, velocity: number): void {
+function playCH(ctx: AudioContext, t: number, velocity: number, gainMul: number): void {
   const src = ctx.createBufferSource();
   src.buffer = getNoise(ctx);
   const hp = ctx.createBiquadFilter();
   hp.type = "highpass";
   hp.frequency.setValueAtTime(7000, t);
-  const g = gainEnv(ctx, t, 0.22 * levelFromVelocity(velocity), 0.0005, 0.035);
+  const g = gainEnv(ctx, t, 0.22 * effectivePeak(velocity, gainMul), 0.0005, 0.035);
   src.connect(hp);
   hp.connect(g);
   g.connect(ctx.destination);
   src.start(t, 0, 0.05);
 }
 
-function playOH(ctx: AudioContext, t: number, velocity: number): void {
+function playOH(ctx: AudioContext, t: number, velocity: number, gainMul: number): void {
   const src = ctx.createBufferSource();
   src.buffer = getNoise(ctx);
   const hp = ctx.createBiquadFilter();
   hp.type = "highpass";
   hp.frequency.setValueAtTime(5000, t);
-  const g = gainEnv(ctx, t, 0.3 * levelFromVelocity(velocity), 0.002, 0.18);
+  const g = gainEnv(ctx, t, 0.3 * effectivePeak(velocity, gainMul), 0.002, 0.18);
   src.connect(hp);
   hp.connect(g);
   g.connect(ctx.destination);
   src.start(t, 0, 0.22);
 }
 
-function playCY(ctx: AudioContext, t: number, velocity: number): void {
-  const vel = levelFromVelocity(velocity);
+function playCY(ctx: AudioContext, t: number, velocity: number, gainMul: number): void {
+  const vel = effectivePeak(velocity, gainMul);
   const freqs = [400, 670, 960];
   freqs.forEach((f, i) => {
     const osc = ctx.createOscillator();
@@ -170,14 +181,14 @@ function playCY(ctx: AudioContext, t: number, velocity: number): void {
   src.start(t, 0, 0.4);
 }
 
-function playCB(ctx: AudioContext, t: number, velocity: number): void {
+function playCB(ctx: AudioContext, t: number, velocity: number, gainMul: number): void {
   const o1 = ctx.createOscillator();
   o1.type = "square";
   o1.frequency.setValueAtTime(540, t);
   const o2 = ctx.createOscillator();
   o2.type = "square";
   o2.frequency.setValueAtTime(800, t);
-  const g = gainEnv(ctx, t, 0.15 * levelFromVelocity(velocity), 0.001, 0.1);
+  const g = gainEnv(ctx, t, 0.15 * effectivePeak(velocity, gainMul), 0.001, 0.1);
   const m = ctx.createGain();
   m.gain.setValueAtTime(0.5, t);
   o1.connect(m);
@@ -190,44 +201,50 @@ function playCB(ctx: AudioContext, t: number, velocity: number): void {
   o2.stop(t + 0.15);
 }
 
-/** Trigger a voice at audio timeline time `t`. */
-export function playVoice(ctx: AudioContext, voice: VoiceId, t: number, velocity = 2): void {
+/** Trigger a voice at audio timeline time `t`. `gainMul` scales loudness (per-step mix, 0–1). */
+export function playVoice(
+  ctx: AudioContext,
+  voice: VoiceId,
+  t: number,
+  velocity = 2,
+  gainMul = 1,
+): void {
   switch (voice) {
     case "BD":
-      playBD(ctx, t, velocity);
+      playBD(ctx, t, velocity, gainMul);
       break;
     case "SD":
-      playSD(ctx, t, velocity);
+      playSD(ctx, t, velocity, gainMul);
       break;
     case "LT":
-      playTom(ctx, t, 190, velocity);
+      playTom(ctx, t, 190, velocity, gainMul);
       break;
     case "MT":
-      playTom(ctx, t, 250, velocity);
+      playTom(ctx, t, 250, velocity, gainMul);
       break;
     case "HT":
-      playTom(ctx, t, 320, velocity);
+      playTom(ctx, t, 320, velocity, gainMul);
       break;
     case "RS":
-      playRS(ctx, t, velocity);
+      playRS(ctx, t, velocity, gainMul);
       break;
     case "CP":
-      playCP(ctx, t, velocity);
+      playCP(ctx, t, velocity, gainMul);
       break;
     case "MA":
-      playMA(ctx, t, velocity);
+      playMA(ctx, t, velocity, gainMul);
       break;
     case "CH":
-      playCH(ctx, t, velocity);
+      playCH(ctx, t, velocity, gainMul);
       break;
     case "OH":
-      playOH(ctx, t, velocity);
+      playOH(ctx, t, velocity, gainMul);
       break;
     case "CY":
-      playCY(ctx, t, velocity);
+      playCY(ctx, t, velocity, gainMul);
       break;
     case "CB":
-      playCB(ctx, t, velocity);
+      playCB(ctx, t, velocity, gainMul);
       break;
     default:
       break;

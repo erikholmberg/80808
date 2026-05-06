@@ -1,5 +1,5 @@
 import type { BeatPattern, StepCell, StepGrid } from "./state/pattern";
-import { STEPS } from "./state/pattern";
+import { createDefaultStepGain, STEPS } from "./state/pattern";
 import { VOICES } from "./voices";
 
 function row(s: string): StepCell[] {
@@ -13,7 +13,7 @@ function make(name: string, bpm: number, lines: string[]): BeatPattern {
   if (lines.length !== VOICES.length) {
     throw new Error("Need 12 rows");
   }
-  return { name, bpm, steps: lines.map(row) as StepGrid };
+  return { name, bpm, steps: lines.map(row) as StepGrid, stepGain: createDefaultStepGain() };
 }
 
 export const BUILT_IN_PRESETS: BeatPattern[] = [

@@ -23,13 +23,10 @@
 
 .title {
   margin: 0;
-}
-
-.logo {
-  display: block;
-  height: clamp(1.85rem, 4.5vw, 2.6rem);
-  width: auto;
-  max-width: min(100%, 26rem);
+  font-size: clamp(1.35rem, 4vw, 1.6rem);
+  letter-spacing: -0.03em;
+  font-weight: 700;
+  color: var(--dm-text);
 }
 
 .sub {

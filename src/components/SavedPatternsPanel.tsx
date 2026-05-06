@@ -63,6 +63,7 @@ export function SavedPatternsPanel({ entries, onSelect, onDelete }: Props) {
                   onSelect({
                     ...e.pattern,
                     steps: e.pattern.steps.map((r) => [...r]),
+                    stepGain: e.pattern.stepGain.map((r) => [...r]),
                   })
                 }
               >

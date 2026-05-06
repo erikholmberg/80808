@@ -1,5 +1,11 @@
 import { NextResponse } from "next/server";
-import { ROWS, STEPS, isValidBeatPattern, type BeatPattern, type StepCell } from "@/state/pattern";
+import {
+  normalizeBeatPattern,
+  ROWS,
+  STEPS,
+  type BeatPattern,
+  type StepCell,
+} from "@/state/pattern";
 import { VOICES } from "@/voices";
 
 export const runtime = "nodejs";
@@ -65,8 +71,7 @@ function coerceBeatPattern(data: unknown, fallbackName: string): BeatPattern | n
     steps.push(cells);
   }
 
-  const candidate: BeatPattern = { name, bpm, steps };
-  return isValidBeatPattern(candidate) ? candidate : null;
+  return normalizeBeatPattern({ name, bpm, steps });
 }
 
 function parsePatternsPayload(parsed: unknown): unknown[] {
@@ -191,7 +196,13 @@ Each pattern must be meaningfully different (genre, syncopation, density). TR-80
   const patterns: BeatPattern[] = [];
   for (let i = 0; i < rawList.length && patterns.length < count; i++) {
     const p = coerceBeatPattern(rawList[i], `Groove ${i + 1}`);
-    if (p) patterns.push({ ...p, steps: p.steps.map((row) => [...row]) });
+    if (p) {
+      patterns.push({
+        ...p,
+        steps: p.steps.map((row) => [...row]),
+        stepGain: p.stepGain.map((row) => [...row]),
+      });
+    }
   }
 
   if (patterns.length === 0) {

@@ -6,18 +6,40 @@ export const ROWS = 12;
 export type StepCell = 0 | 1 | 2;
 export type StepGrid = StepCell[][];
 
+/** Per-step mix level (0–1), multiplied with normal/accent loudness. Same shape as `steps`. */
+export type StepGainGrid = number[][];
+
 export type BeatPattern = {
   name: string;
   bpm: number;
   steps: StepGrid;
+  stepGain: StepGainGrid;
 };
+
+export function createDefaultStepGain(): StepGainGrid {
+  return VOICES.map(() => Array<number>(STEPS).fill(1));
+}
 
 export function createEmptyPattern(name = "Untitled"): BeatPattern {
   return {
     name,
     bpm: 120,
     steps: VOICES.map(() => Array<StepCell>(STEPS).fill(0)),
+    stepGain: createDefaultStepGain(),
   };
+}
+
+export function clampStepGain(n: number): number {
+  if (typeof n !== "number" || !Number.isFinite(n)) return 1;
+  return Math.max(0, Math.min(1, n));
+}
+
+export function setStepGain(grid: StepGainGrid, row: number, col: number, value: number): StepGainGrid {
+  const next = grid.map((r) => [...r]);
+  if (next[row]?.[col] !== undefined) {
+    next[row]![col] = clampStepGain(value);
+  }
+  return next;
 }
 
 function coerceStepCell(cell: unknown): StepCell | null {
@@ -49,8 +71,16 @@ export function setStepValue(grid: StepGrid, row: number, col: number, value: St
   return next;
 }
 
-export function clearPattern(): StepGrid {
-  return VOICES.map(() => Array<StepCell>(STEPS).fill(0));
+export function clearPattern(): Pick<BeatPattern, "steps" | "stepGain"> {
+  return {
+    steps: VOICES.map(() => Array<StepCell>(STEPS).fill(0)),
+    stepGain: createDefaultStepGain(),
+  };
+}
+
+function coerceGainCell(cell: unknown): number | null {
+  if (typeof cell !== "number" || !Number.isFinite(cell)) return null;
+  return clampStepGain(cell);
 }
 
 export function normalizeBeatPattern(data: unknown): BeatPattern | null {
@@ -71,7 +101,26 @@ export function normalizeBeatPattern(data: unknown): BeatPattern | null {
     steps.push(rowOut);
   }
   if (o.bpm < 40 || o.bpm > 200) return null;
-  return { name: o.name, bpm: o.bpm, steps };
+
+  let stepGain: StepGainGrid = createDefaultStepGain();
+  if (o.stepGain !== undefined) {
+    if (!Array.isArray(o.stepGain) || o.stepGain.length !== ROWS) return null;
+    const sg: StepGainGrid = [];
+    for (let r = 0; r < ROWS; r++) {
+      const row = o.stepGain[r];
+      if (!Array.isArray(row) || row.length !== STEPS) return null;
+      const rowOut: number[] = [];
+      for (let c = 0; c < STEPS; c++) {
+        const g = coerceGainCell(row[c]);
+        if (g === null) return null;
+        rowOut.push(g);
+      }
+      sg.push(rowOut);
+    }
+    stepGain = sg;
+  }
+
+  return { name: o.name, bpm: o.bpm, steps, stepGain };
 }
 
 export function isValidBeatPattern(data: unknown): data is BeatPattern {

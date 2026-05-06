@@ -30,6 +30,7 @@ export function loadSavedPatterns(): SavedPatternEntry[] {
           pattern: {
             ...normalized,
             steps: normalized.steps.map((row) => [...row]),
+            stepGain: normalized.stepGain.map((row) => [...row]),
           },
         };
       })

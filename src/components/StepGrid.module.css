@@ -179,6 +179,9 @@
 }
 
 .cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   aspect-ratio: 1;
   min-height: 1.35rem;
   border-radius: 4px;
@@ -189,6 +192,20 @@
   transition:
     background 0.08s ease,
     border-color 0.08s ease;
+}
+
+.cellGainLabel {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: clamp(0.42rem, 2.8cqmin, 0.62rem);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: var(--dm-cell-on-text);
+  pointer-events: none;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .cell:hover {
@@ -205,6 +222,10 @@
   border-color: var(--dm-accent);
 }
 
+.cellGainAdjusted {
+  box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--dm-accent) 55%, transparent);
+}
+
 .cellPlay {
   outline: 1px solid var(--dm-accent);
   outline-offset: 0;
@@ -213,4 +234,42 @@
 .cell:focus-visible {
   outline: 2px solid var(--dm-focus);
   outline-offset: 1px;
+}
+
+.gainPopover {
+  position: fixed;
+  z-index: 80;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.65rem;
+  min-width: 11rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: var(--dm-radius-sm);
+  border: 1px solid var(--dm-border);
+  background: var(--dm-elevated);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+}
+
+.gainLabel {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--dm-text-muted);
+}
+
+.gainRange {
+  flex: 1 1 6rem;
+  min-width: 0;
+  accent-color: var(--dm-accent);
+}
+
+.gainValue {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--dm-text-muted);
+  min-width: 2.25rem;
+  text-align: right;
 }

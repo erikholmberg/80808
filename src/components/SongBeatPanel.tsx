@@ -21,6 +21,7 @@ function clonePattern(p: BeatPattern): BeatPattern {
   return {
     ...p,
     steps: p.steps.map((row) => [...row]),
+    stepGain: p.stepGain.map((row) => [...row]),
   };
 }
 

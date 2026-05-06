@@ -74,6 +74,7 @@ export function PresetPicker({ presets, onSelect }: Props) {
         additions.push({
           ...normalized,
           steps: normalized.steps.map((row) => [...row]),
+          stepGain: normalized.stepGain.map((row) => [...row]),
         });
       }
 
@@ -108,7 +109,13 @@ export function PresetPicker({ presets, onSelect }: Props) {
             <button
               type="button"
               className={styles.presetBtn}
-              onClick={() => onSelect({ ...p, steps: p.steps.map((r) => [...r]) })}
+              onClick={() =>
+                onSelect({
+                  ...p,
+                  steps: p.steps.map((r) => [...r]),
+                  stepGain: p.stepGain.map((r) => [...r]),
+                })
+              }
             >
               <span className={styles.name}>{p.name}</span>
               <span className={styles.bpm}>{p.bpm} BPM</span>

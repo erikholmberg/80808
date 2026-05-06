@@ -21,6 +21,7 @@ import {
   clearPattern,
   createEmptyPattern,
   normalizeBeatPattern,
+  setStepGain,
   setStepValue,
   toggleStep,
   type BeatPattern,
@@ -178,7 +179,11 @@ export function DrumMachine() {
           if (col === null || p.steps[row]?.[col] === undefined) return p;
           const on = p.steps[row]![col] > 0;
           const steps = setStepValue(p.steps, row, col, on ? 0 : 1);
-          const next = { ...p, steps };
+          let stepGain = p.stepGain;
+          if (!on) {
+            stepGain = setStepGain(p.stepGain, row, col, 1);
+          }
+          const next = { ...p, steps, stepGain };
           patternRef.current = next;
           return next;
         });
@@ -273,11 +278,13 @@ export function DrumMachine() {
         const step = stepIndexRef.current;
         recordStepRef.current = step;
         const grid = patternRef.current.steps;
+        const gains = patternRef.current.stepGain;
         const sp = secondsPerStep(patternRef.current.bpm);
         for (let r = 0; r < 12; r++) {
           const velocity = grid[r]?.[step];
-          if (velocity && velocity > 0) {
-            playVoice(ctx, VOICES[r]!, nextStepTimeRef.current, velocity);
+          const gainMul = gains[r]?.[step] ?? 1;
+          if (velocity && velocity > 0 && gainMul > 0) {
+            playVoice(ctx, VOICES[r]!, nextStepTimeRef.current, velocity, gainMul);
           }
         }
         lastUiStep = step;
@@ -299,7 +306,25 @@ export function DrumMachine() {
   }, [playing]);
 
   const onToggle = (row: number, col: number) => {
-    setPattern((p) => ({ ...p, steps: toggleStep(p.steps, row, col) }));
+    setPattern((p) => {
+      const cur = p.steps[row]![col]!;
+      const nextSteps = toggleStep(p.steps, row, col);
+      const nextVal = nextSteps[row]![col]!;
+      let stepGain = p.stepGain;
+      if (nextVal === 0) {
+        stepGain = setStepGain(p.stepGain, row, col, 1);
+      } else if (cur === 0) {
+        stepGain = setStepGain(p.stepGain, row, col, 1);
+      }
+      return { ...p, steps: nextSteps, stepGain };
+    });
+  };
+
+  const onStepGainChange = (row: number, col: number, gain: number) => {
+    setPattern((p) => ({
+      ...p,
+      stepGain: setStepGain(p.stepGain, row, col, gain),
+    }));
   };
 
   const onPlay = () => {
@@ -326,7 +351,7 @@ export function DrumMachine() {
 
   const onClear = () => {
     setRecording(false);
-    setPattern((p) => ({ ...p, steps: clearPattern() }));
+    setPattern((p) => ({ ...p, ...clearPattern() }));
   };
 
   const onBpmChange = (bpm: number) => {
@@ -344,6 +369,7 @@ export function DrumMachine() {
       pattern: {
         ...p,
         steps: p.steps.map((row) => [...row]),
+        stepGain: p.stepGain.map((row) => [...row]),
       },
     };
     setSavedEntries((prev) => [entry, ...prev]);
@@ -361,16 +387,7 @@ export function DrumMachine() {
       <header className={styles.header}>
         <div className={styles.headerTop}>
           <div className={styles.headerIntro}>
-            <h1 className={styles.title}>
-              <img
-                src="/80808-logo.svg"
-                alt="80808 Drum Machine"
-                className={styles.logo}
-                width={1527}
-                height={579}
-                decoding="async"
-              />
-            </h1>
+            <h1 className={styles.title}>80808</h1>
             <p className={styles.sub}>
               Program the step grid, play drums on the pads or with 1–6 and Q–Y, and save copies
               of patterns in this browser.
@@ -407,8 +424,10 @@ export function DrumMachine() {
       <div className={styles.sequencerSection}>
         <StepGrid
           steps={pattern.steps}
+          stepGain={pattern.stepGain}
           playhead={playing ? playhead : null}
           onToggle={onToggle}
+          onStepGainChange={onStepGainChange}
           compact
         />
       </div>
@@ -419,6 +438,7 @@ export function DrumMachine() {
           setPattern({
             ...p,
             steps: p.steps.map((row) => [...row]),
+            stepGain: p.stepGain.map((row) => [...row]),
           })
         }
       />
@@ -428,6 +448,7 @@ export function DrumMachine() {
           setPattern({
             ...p,
             steps: p.steps.map((row) => [...row]),
+            stepGain: p.stepGain.map((row) => [...row]),
           })
         }
         onSaveToLibrary={savePatternToLibrary}
@@ -439,6 +460,7 @@ export function DrumMachine() {
           setPattern({
             ...p,
             steps: p.steps.map((row) => [...row]),
+            stepGain: p.stepGain.map((row) => [...row]),
           })
         }
         onDelete={(id) => setSavedEntries((prev) => prev.filter((e) => e.id !== id))}
