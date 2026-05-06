@@ -9,12 +9,3 @@ export function DrumMachinePageFallback() {
     </div>
   );
 }
-
-export function SongBeatPanelFallback() {
-  return (
-    <div className={styles.songPanel} aria-hidden>
-      <div className={styles.songTitle} />
-      <div className={styles.songBody} />
-    </div>
-  );
-}

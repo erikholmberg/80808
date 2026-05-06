@@ -49,8 +49,7 @@ export function SavedPatternsPanel({ entries, onSelect, onDelete }: Props) {
       <h2 className={styles.heading}>Saved patterns</h2>
       {entries.length === 0 ? (
         <p className={styles.empty}>
-          No saved patterns yet. Use <strong>Save</strong> on the transport bar or generate from a song, then{' '}
-          <strong>Save to Saved patterns</strong>.
+          No saved patterns yet. Use <strong>Save</strong> on the transport bar to store a copy here.
         </p>
       ) : (
         <ul className={styles.list}>

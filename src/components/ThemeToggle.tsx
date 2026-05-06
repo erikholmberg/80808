@@ -1,14 +1,25 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 import styles from "./ThemeToggle.module.css";
 
 const STORAGE_KEY = "80808-theme";
 
-function readTheme(): "light" | "dark" {
+function getThemeSnapshot(): "light" | "dark" {
   if (typeof document === "undefined") return "light";
   const t = document.documentElement.getAttribute("data-theme");
   return t === "dark" ? "dark" : "light";
+}
+
+function subscribeTheme(onStoreChange: () => void): () => void {
+  const el = document.documentElement;
+  const mo = new MutationObserver(() => onStoreChange());
+  mo.observe(el, { attributes: true, attributeFilter: ["data-theme"] });
+  window.addEventListener("storage", onStoreChange);
+  return () => {
+    mo.disconnect();
+    window.removeEventListener("storage", onStoreChange);
+  };
 }
 
 function applyTheme(next: "light" | "dark") {
@@ -21,16 +32,11 @@ function applyTheme(next: "light" | "dark") {
 }
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<"light" | "dark">("light");
-
-  useEffect(() => {
-    setTheme(readTheme());
-  }, []);
+  const theme = useSyncExternalStore(subscribeTheme, getThemeSnapshot, () => "light");
 
   const toggle = useCallback(() => {
     const next = theme === "light" ? "dark" : "light";
     applyTheme(next);
-    setTheme(next);
   }, [theme]);
 
   const label =

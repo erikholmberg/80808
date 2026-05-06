@@ -33,20 +33,3 @@
   composes: block;
   height: 18rem;
 }
-
-.songPanel {
-  margin-top: 1rem;
-  margin-bottom: 1.25rem;
-}
-
-.songTitle {
-  composes: block;
-  height: 0.85rem;
-  width: 40%;
-  margin-bottom: 0.65rem;
-}
-
-.songBody {
-  composes: block;
-  height: 8rem;
-}

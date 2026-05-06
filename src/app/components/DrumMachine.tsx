@@ -1,6 +1,5 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import {
   useCallback,
   useEffect,
@@ -38,13 +37,7 @@ import { PresetPicker } from "@/components/PresetPicker";
 import { StepGrid } from "@/components/StepGrid";
 import { SavedPatternsPanel } from "@/components/SavedPatternsPanel";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { SongBeatPanelFallback } from "./DrumMachineFallback";
 import styles from "./DrumMachine.module.css";
-
-const SongBeatPanel = dynamic(
-  () => import("@/components/SongBeatPanel").then((m) => ({ default: m.SongBeatPanel })),
-  { loading: () => <SongBeatPanelFallback /> },
-);
 
 const STORAGE_KEY = "80808-beat-v1";
 
@@ -453,17 +446,6 @@ export function DrumMachine() {
             stepGain: p.stepGain.map((row) => [...row]),
           })
         }
-      />
-
-      <SongBeatPanel
-        onApplyPattern={(p) =>
-          setPattern({
-            ...p,
-            steps: p.steps.map((row) => [...row]),
-            stepGain: p.stepGain.map((row) => [...row]),
-          })
-        }
-        onSaveToLibrary={savePatternToLibrary}
       />
     </div>
   );
