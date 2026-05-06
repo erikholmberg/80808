@@ -388,13 +388,13 @@ export function DrumMachine() {
         <div className={styles.headerTop}>
           <div className={styles.headerIntro}>
             <h1 className={styles.title}>80808</h1>
-            <p className={styles.sub}>
-              Program the step grid, play drums on the pads or with 1–6 and Q–Y, and save copies
-              of patterns in this browser.
-            </p>
           </div>
           <ThemeToggle />
         </div>
+        <p className={styles.sub}>
+          Program the step grid, play drums on the pads or with 1–6 and Q–Y, and save copies of
+          patterns in this browser.
+        </p>
         {showIOSAudioHint ? (
           <p className={styles.mobileAudioHint} role="note">
             iPhone / iPad: turn off silent mode if you don&apos;t hear drums.
@@ -432,6 +432,18 @@ export function DrumMachine() {
         />
       </div>
 
+      <SavedPatternsPanel
+        entries={savedEntries}
+        onSelect={(p) =>
+          setPattern({
+            ...p,
+            steps: p.steps.map((row) => [...row]),
+            stepGain: p.stepGain.map((row) => [...row]),
+          })
+        }
+        onDelete={(id) => setSavedEntries((prev) => prev.filter((e) => e.id !== id))}
+      />
+
       <PresetPicker
         presets={BUILT_IN_PRESETS}
         onSelect={(p) =>
@@ -452,18 +464,6 @@ export function DrumMachine() {
           })
         }
         onSaveToLibrary={savePatternToLibrary}
-      />
-
-      <SavedPatternsPanel
-        entries={savedEntries}
-        onSelect={(p) =>
-          setPattern({
-            ...p,
-            steps: p.steps.map((row) => [...row]),
-            stepGain: p.stepGain.map((row) => [...row]),
-          })
-        }
-        onDelete={(id) => setSavedEntries((prev) => prev.filter((e) => e.id !== id))}
       />
     </div>
   );

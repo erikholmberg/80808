@@ -30,10 +30,11 @@
 }
 
 .sub {
-  margin-top: 0.4rem;
+  margin: 0.5rem 0 0;
+  width: 100%;
+  box-sizing: border-box;
   font-size: 0.92rem;
   color: var(--dm-text-muted);
-  max-width: 42rem;
   line-height: 1.5;
 }
 
