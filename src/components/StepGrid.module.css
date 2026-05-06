@@ -27,6 +27,13 @@
   text-align: left;
 }
 
+.legend {
+  margin: -0.35rem 0 0.65rem;
+  font-size: 0.68rem;
+  color: var(--dm-text-dim);
+  text-align: left;
+}
+
 .wrapCompact .headerRow,
 .wrapCompact .row {
   grid-template-columns: 1.75rem repeat(16, minmax(0, 1fr));
@@ -191,6 +198,11 @@
 .cellOn {
   background: var(--dm-cell-on);
   border-color: var(--dm-cell-on-border);
+}
+
+.cellAccent {
+  background: color-mix(in srgb, var(--dm-cell-on) 62%, white);
+  border-color: var(--dm-accent);
 }
 
 .cellPlay {

@@ -1,12 +1,12 @@
-import type { BeatPattern, StepGrid } from "./state/pattern";
+import type { BeatPattern, StepCell, StepGrid } from "./state/pattern";
 import { STEPS } from "./state/pattern";
 import { VOICES } from "./voices";
 
-function row(s: string): boolean[] {
+function row(s: string): StepCell[] {
   if (s.length !== STEPS) {
     throw new Error(`Pattern row must be ${STEPS} chars`);
   }
-  return s.split("").map((c) => c === "x" || c === "X");
+  return s.split("").map((c) => (c === "x" ? 1 : c === "X" ? 2 : 0));
 }
 
 function make(name: string, bpm: number, lines: string[]): BeatPattern {

@@ -20,7 +20,7 @@ import { BUILT_IN_PRESETS } from "@/presets";
 import {
   clearPattern,
   createEmptyPattern,
-  isValidBeatPattern,
+  normalizeBeatPattern,
   setStepValue,
   toggleStep,
   type BeatPattern,
@@ -53,7 +53,7 @@ function loadStored(): BeatPattern | null {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
     const data: unknown = JSON.parse(raw);
-    if (isValidBeatPattern(data)) return data;
+    return normalizeBeatPattern(data);
   } catch {
     /* ignore */
   }
@@ -173,8 +173,8 @@ export function DrumMachine() {
           if (!recordingRef.current || !playingRef.current) return p;
           const col = recordStepRef.current;
           if (col === null || p.steps[row]?.[col] === undefined) return p;
-          const on = Boolean(p.steps[row]![col]);
-          const steps = setStepValue(p.steps, row, col, !on);
+          const on = p.steps[row]![col] > 0;
+          const steps = setStepValue(p.steps, row, col, on ? 0 : 1);
           const next = { ...p, steps };
           patternRef.current = next;
           return next;
@@ -272,8 +272,9 @@ export function DrumMachine() {
         const grid = patternRef.current.steps;
         const sp = secondsPerStep(patternRef.current.bpm);
         for (let r = 0; r < 12; r++) {
-          if (grid[r]?.[step]) {
-            playVoice(ctx, VOICES[r]!, nextStepTimeRef.current);
+          const velocity = grid[r]?.[step];
+          if (velocity && velocity > 0) {
+            playVoice(ctx, VOICES[r]!, nextStepTimeRef.current, velocity);
           }
         }
         lastUiStep = step;
@@ -366,10 +367,11 @@ export function DrumMachine() {
     reader.onload = () => {
       try {
         const data: unknown = JSON.parse(String(reader.result));
-        if (isValidBeatPattern(data)) {
+        const normalized = normalizeBeatPattern(data);
+        if (normalized) {
           setPattern({
-            ...data,
-            steps: data.steps.map((row) => [...row]),
+            ...normalized,
+            steps: normalized.steps.map((row) => [...row]),
           });
         }
       } catch {

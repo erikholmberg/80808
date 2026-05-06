@@ -20,7 +20,10 @@ export function StepGrid({ steps, playhead, onToggle, compact, fillHeight }: Pro
       className={`${styles.wrap} ${compact ? styles.wrapCompact : ""} ${fill ? styles.wrapCompactFill : ""}`}
     >
       {compact ? (
-        <p className={styles.cardTitle}>Step sequencer</p>
+        <>
+          <p className={styles.cardTitle}>Step sequencer</p>
+          <p className={styles.legend}>Click step: Off {"->"} Normal {"->"} Accent</p>
+        </>
       ) : null}
       <div className={styles.headerRow}>
         <div className={styles.corner} />
@@ -40,9 +43,9 @@ export function StepGrid({ steps, playhead, onToggle, compact, fillHeight }: Pro
             <button
               key={col}
               type="button"
-              className={`${styles.cell} ${on ? styles.cellOn : ""} ${playhead === col ? styles.cellPlay : ""}`}
-              aria-pressed={on}
-              aria-label={`${voice} step ${col + 1}`}
+              className={`${styles.cell} ${on > 0 ? styles.cellOn : ""} ${on > 1 ? styles.cellAccent : ""} ${playhead === col ? styles.cellPlay : ""}`}
+              aria-pressed={on > 0}
+              aria-label={`${voice} step ${col + 1} ${on === 0 ? "off" : on === 1 ? "normal" : "accent"}`}
               onClick={() => onToggle(row, col)}
             />
           ))}

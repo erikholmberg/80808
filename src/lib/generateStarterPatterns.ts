@@ -20,50 +20,50 @@ export function generateStarterPatterns(count: number, firstSerial: number): Bea
 
     if (style === 0) {
       for (let c = 0; c < STEPS; c++) {
-        if (c % 4 === 0 && Math.random() < 0.72) g[iBD]![c] = true;
-        else if (Math.random() < 0.06) g[iBD]![c] = true;
+        if (c % 4 === 0 && Math.random() < 0.72) g[iBD]![c] = 1;
+        else if (Math.random() < 0.06) g[iBD]![c] = 1;
       }
       if (Math.random() < 0.88) {
-        g[iSD]![4] = true;
-        g[iSD]![12] = true;
+        g[iSD]![4] = 1;
+        g[iSD]![12] = 1;
       }
       for (let c = 0; c < STEPS; c++) {
-        if (Math.random() < 0.38) g[iCH]![c] = true;
+        if (Math.random() < 0.38) g[iCH]![c] = 1;
       }
     } else if (style === 1) {
-      for (const c of [0, 8]) if (Math.random() < 0.85) g[iBD]![c] = true;
-      if (Math.random() < 0.5) g[iBD]![4] = true;
-      if (Math.random() < 0.55) g[iBD]![12] = true;
+      for (const c of [0, 8]) if (Math.random() < 0.85) g[iBD]![c] = 1;
+      if (Math.random() < 0.5) g[iBD]![4] = 1;
+      if (Math.random() < 0.55) g[iBD]![12] = 1;
       if (Math.random() < 0.75) {
-        g[iSD]![4] = true;
-        g[iSD]![12] = true;
+        g[iSD]![4] = 1;
+        g[iSD]![12] = 1;
       }
       for (let c = 0; c < STEPS; c += 2) {
-        if (Math.random() < 0.55) g[iCH]![c] = true;
+        if (Math.random() < 0.55) g[iCH]![c] = 1;
       }
-      if (Math.random() < 0.35) g[iOH]![14] = true;
+      if (Math.random() < 0.35) g[iOH]![14] = 1;
     } else if (style === 2) {
       for (let c = 0; c < STEPS; c++) {
-        if (Math.random() < 0.22) g[iBD]![c] = true;
+        if (Math.random() < 0.22) g[iBD]![c] = 1;
       }
-      for (const c of [4, 12]) if (Math.random() < 0.8) g[iSD]![c] = true;
+      for (const c of [4, 12]) if (Math.random() < 0.8) g[iSD]![c] = 1;
       for (let c = 0; c < STEPS; c++) {
-        if (Math.random() < 0.42) g[iCH]![c] = true;
+        if (Math.random() < 0.42) g[iCH]![c] = 1;
       }
-      if (Math.random() < 0.4) g[iCP]![8] = true;
+      if (Math.random() < 0.4) g[iCP]![8] = 1;
     } else {
       for (let c = 0; c < STEPS; c++) {
-        if (c % 4 === 0 && Math.random() < 0.68) g[iBD]![c] = true;
+        if (c % 4 === 0 && Math.random() < 0.68) g[iBD]![c] = 1;
       }
       if (Math.random() < 0.7) {
-        g[iRS]![8] = true;
+        g[iRS]![8] = 1;
       }
       if (Math.random() < 0.82) {
-        g[iSD]![4] = true;
-        g[iSD]![12] = true;
+        g[iSD]![4] = 1;
+        g[iSD]![12] = 1;
       }
       for (let c = 0; c < STEPS; c++) {
-        if (Math.random() < 0.28) g[iCH]![c] = true;
+        if (Math.random() < 0.28) g[iCH]![c] = 1;
       }
     }
 
@@ -77,7 +77,7 @@ export function generateStarterPatterns(count: number, firstSerial: number): Bea
       }
       if (any) break;
     }
-    if (!any) g[iBD]![0] = true;
+    if (!any) g[iBD]![0] = 1;
 
     out.push(p);
   }

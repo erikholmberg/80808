@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { ROWS, STEPS, isValidBeatPattern, type BeatPattern } from "@/state/pattern";
+import { ROWS, STEPS, isValidBeatPattern, type BeatPattern, type StepCell } from "@/state/pattern";
 import { VOICES } from "@/voices";
 
 export const runtime = "nodejs";
@@ -16,15 +16,22 @@ function stripJsonFence(text: string): string {
   return s.trim();
 }
 
-function cellToBool(v: unknown): boolean {
-  if (v === true) return true;
-  if (v === false || v == null) return false;
-  if (typeof v === "number") return v !== 0;
+function cellToStep(v: unknown): StepCell {
+  if (v === true) return 1;
+  if (v === false || v == null) return 0;
+  if (typeof v === "number") {
+    if (!Number.isFinite(v)) return 0;
+    const rounded = Math.round(v);
+    if (rounded <= 0) return 0;
+    if (rounded >= 2) return 2;
+    return 1;
+  }
   if (typeof v === "string") {
     const t = v.trim().toLowerCase();
-    return t === "1" || t === "true" || t === "x";
+    if (t === "2" || t === "accent" || t === "a" || t === "x!") return 2;
+    if (t === "1" || t === "true" || t === "x") return 1;
   }
-  return false;
+  return 0;
 }
 
 function coerceBeatPattern(data: unknown, fallbackName: string): BeatPattern | null {
@@ -44,16 +51,16 @@ function coerceBeatPattern(data: unknown, fallbackName: string): BeatPattern | n
   const rawSteps = o.steps;
   if (!Array.isArray(rawSteps)) return null;
 
-  const steps: boolean[][] = [];
+  const steps: StepCell[][] = [];
   for (let r = 0; r < ROWS; r++) {
     const row = rawSteps[r];
-    const cells: boolean[] = [];
+    const cells: StepCell[] = [];
     if (Array.isArray(row)) {
       for (let c = 0; c < STEPS; c++) {
-        cells.push(cellToBool(row[c]));
+        cells.push(cellToStep(row[c]));
       }
     } else {
-      for (let c = 0; c < STEPS; c++) cells.push(false);
+      for (let c = 0; c < STEPS; c++) cells.push(0);
     }
     steps.push(cells);
   }
@@ -103,9 +110,9 @@ Return a single JSON object with exactly one key "patterns", whose value is an a
 Each object must have:
 - "name": string, short creative title for the groove (max 80 chars), must be unique across this array.
 - "bpm": integer from 40 to 200.
-- "steps": array of exactly ${ROWS} rows; each row is exactly ${STEPS} booleans only (true/false).
+- "steps": array of exactly ${ROWS} rows; each row is exactly ${STEPS} cells where each cell is 0, 1, or 2.
 Row order must match these 12 voices (index 0 = first row): ${voiceOrder}.
-Each column is one 16th-note step in one bar; true = hit on that step.
+Each column is one 16th-note step in one bar; 0 = off, 1 = normal hit, 2 = accent hit.
 Each pattern must be meaningfully different (genre, syncopation, density). TR-808-style electronic drums only; plausible human-programmed grooves.`;
 
   const user = `Generate ${count} distinct starter drum patterns as specified.`;

@@ -6,6 +6,7 @@ A browser-based drum machine built with **Next.js** and the **Web Audio API**. I
 
 - **Twelve synthesized voices** — bass drum, snare, toms, percussion, hats, cymbal, and cowbell-style sounds, triggered in real time through Web Audio.
 - **Sixteen-step sequencer** — toggle steps per voice on the grid; the transport runs the pattern at your chosen **BPM** with a visible playhead.
+- **Per-step velocity / accent** — each step cycles through **off → normal → accent**; accented hits play louder than normal hits.
 - **Pad playing** — click pads on the panel or use the **keyboard map** (for example `1`–`6` and `Q`–`Y`); the legend shows which key maps to which voice (physical key codes are used so non–US layouts still line up with the digit row).
 - **Transport** — play/stop (**Space** toggles play/stop when focus isn’t in a form field), pattern name, BPM, clear pattern, **save pattern as JSON**, and **import JSON** to load a beat from a file.
 - **Record** — toggle **Record** to arm live step entry; if playback is stopped, transport starts so the playhead moves. While Record is on and the pattern is playing, each pad or keyboard hit **toggles** that instrument at the **current sequencer step**: adds a hit when the step is off, or **removes** it when that step is already on (the highlighted/yellow cell under the playhead). Stop or Clear disarms Record.

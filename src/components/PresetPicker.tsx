@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { BeatPattern } from "@/state/pattern";
-import { isValidBeatPattern } from "@/state/pattern";
+import { normalizeBeatPattern } from "@/state/pattern";
 import { generateStarterPatterns } from "@/lib/generateStarterPatterns";
 import styles from "./PresetPicker.module.css";
 
@@ -69,10 +69,11 @@ export function PresetPicker({ presets, onSelect }: Props) {
 
       for (const item of list) {
         if (additions.length >= n) break;
-        if (!isValidBeatPattern(item)) continue;
+        const normalized = normalizeBeatPattern(item);
+        if (!normalized) continue;
         additions.push({
-          ...item,
-          steps: item.steps.map((row) => [...row]),
+          ...normalized,
+          steps: normalized.steps.map((row) => [...row]),
         });
       }
 

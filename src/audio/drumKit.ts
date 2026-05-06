@@ -2,6 +2,12 @@ import type { VoiceId } from "../voices";
 
 let noiseBuffer: AudioBuffer | null = null;
 
+function levelFromVelocity(velocity: number): number {
+  if (velocity >= 2) return 1;
+  if (velocity <= 0) return 0;
+  return 0.72;
+}
+
 function getNoise(ctx: AudioContext): AudioBuffer {
   if (!noiseBuffer || noiseBuffer.sampleRate !== ctx.sampleRate) {
     const len = Math.floor(ctx.sampleRate * 0.25);
@@ -26,26 +32,27 @@ function gainEnv(
   return g;
 }
 
-function playBD(ctx: AudioContext, t: number): void {
+function playBD(ctx: AudioContext, t: number, velocity: number): void {
   const osc = ctx.createOscillator();
   osc.type = "sine";
   osc.frequency.setValueAtTime(160, t);
   osc.frequency.exponentialRampToValueAtTime(48, t + 0.12);
-  const g = gainEnv(ctx, t, 0.95, 0.002, 0.22);
+  const g = gainEnv(ctx, t, 0.95 * levelFromVelocity(velocity), 0.002, 0.22);
   osc.connect(g);
   g.connect(ctx.destination);
   osc.start(t);
   osc.stop(t + 0.35);
 }
 
-function playSD(ctx: AudioContext, t: number): void {
+function playSD(ctx: AudioContext, t: number, velocity: number): void {
   const src = ctx.createBufferSource();
   src.buffer = getNoise(ctx);
   const bp = ctx.createBiquadFilter();
   bp.type = "bandpass";
   bp.frequency.setValueAtTime(1800, t);
   bp.Q.setValueAtTime(1.2, t);
-  const ng = gainEnv(ctx, t, 0.55, 0.001, 0.12);
+  const vel = levelFromVelocity(velocity);
+  const ng = gainEnv(ctx, t, 0.55 * vel, 0.001, 0.12);
   src.connect(bp);
   bp.connect(ng);
   ng.connect(ctx.destination);
@@ -54,97 +61,98 @@ function playSD(ctx: AudioContext, t: number): void {
   const tone = ctx.createOscillator();
   tone.type = "triangle";
   tone.frequency.setValueAtTime(220, t);
-  const tg = gainEnv(ctx, t, 0.35, 0.001, 0.06);
+  const tg = gainEnv(ctx, t, 0.35 * vel, 0.001, 0.06);
   tone.connect(tg);
   tg.connect(ctx.destination);
   tone.start(t);
   tone.stop(t + 0.08);
 }
 
-function playTom(ctx: AudioContext, t: number, startHz: number): void {
+function playTom(ctx: AudioContext, t: number, startHz: number, velocity: number): void {
   const osc = ctx.createOscillator();
   osc.type = "sine";
   osc.frequency.setValueAtTime(startHz, t);
   osc.frequency.exponentialRampToValueAtTime(startHz * 0.35, t + 0.12);
-  const g = gainEnv(ctx, t, 0.45, 0.002, 0.18);
+  const g = gainEnv(ctx, t, 0.45 * levelFromVelocity(velocity), 0.002, 0.18);
   osc.connect(g);
   g.connect(ctx.destination);
   osc.start(t);
   osc.stop(t + 0.25);
 }
 
-function playRS(ctx: AudioContext, t: number): void {
+function playRS(ctx: AudioContext, t: number, velocity: number): void {
   const src = ctx.createBufferSource();
   src.buffer = getNoise(ctx);
   const hp = ctx.createBiquadFilter();
   hp.type = "highpass";
   hp.frequency.setValueAtTime(1200, t);
-  const g = gainEnv(ctx, t, 0.5, 0.0005, 0.04);
+  const g = gainEnv(ctx, t, 0.5 * levelFromVelocity(velocity), 0.0005, 0.04);
   src.connect(hp);
   hp.connect(g);
   g.connect(ctx.destination);
   src.start(t, 0, 0.05);
 }
 
-function playCP(ctx: AudioContext, t: number): void {
+function playCP(ctx: AudioContext, t: number, velocity: number): void {
   const src = ctx.createBufferSource();
   src.buffer = getNoise(ctx);
   const bp = ctx.createBiquadFilter();
   bp.type = "bandpass";
   bp.frequency.setValueAtTime(1400, t);
-  const g = gainEnv(ctx, t, 0.6, 0.002, 0.08);
+  const g = gainEnv(ctx, t, 0.6 * levelFromVelocity(velocity), 0.002, 0.08);
   src.connect(bp);
   bp.connect(g);
   g.connect(ctx.destination);
   src.start(t, 0, 0.1);
 }
 
-function playMA(ctx: AudioContext, t: number): void {
+function playMA(ctx: AudioContext, t: number, velocity: number): void {
   const src = ctx.createBufferSource();
   src.buffer = getNoise(ctx);
   const hp = ctx.createBiquadFilter();
   hp.type = "highpass";
   hp.frequency.setValueAtTime(6000, t);
-  const g = gainEnv(ctx, t, 0.25, 0.001, 0.03);
+  const g = gainEnv(ctx, t, 0.25 * levelFromVelocity(velocity), 0.001, 0.03);
   src.connect(hp);
   hp.connect(g);
   g.connect(ctx.destination);
   src.start(t, 0, 0.04);
 }
 
-function playCH(ctx: AudioContext, t: number): void {
+function playCH(ctx: AudioContext, t: number, velocity: number): void {
   const src = ctx.createBufferSource();
   src.buffer = getNoise(ctx);
   const hp = ctx.createBiquadFilter();
   hp.type = "highpass";
   hp.frequency.setValueAtTime(7000, t);
-  const g = gainEnv(ctx, t, 0.22, 0.0005, 0.035);
+  const g = gainEnv(ctx, t, 0.22 * levelFromVelocity(velocity), 0.0005, 0.035);
   src.connect(hp);
   hp.connect(g);
   g.connect(ctx.destination);
   src.start(t, 0, 0.05);
 }
 
-function playOH(ctx: AudioContext, t: number): void {
+function playOH(ctx: AudioContext, t: number, velocity: number): void {
   const src = ctx.createBufferSource();
   src.buffer = getNoise(ctx);
   const hp = ctx.createBiquadFilter();
   hp.type = "highpass";
   hp.frequency.setValueAtTime(5000, t);
-  const g = gainEnv(ctx, t, 0.3, 0.002, 0.18);
+  const g = gainEnv(ctx, t, 0.3 * levelFromVelocity(velocity), 0.002, 0.18);
   src.connect(hp);
   hp.connect(g);
   g.connect(ctx.destination);
   src.start(t, 0, 0.22);
 }
 
-function playCY(ctx: AudioContext, t: number): void {
+function playCY(ctx: AudioContext, t: number, velocity: number): void {
+  const vel = levelFromVelocity(velocity);
   const freqs = [400, 670, 960];
   freqs.forEach((f, i) => {
     const osc = ctx.createOscillator();
     osc.type = "triangle";
     osc.frequency.setValueAtTime(f, t);
-    const g = gainEnv(ctx, t, 0.08 / (i + 1), 0.001, 0.45 + i * 0.05);
+    const g = gainEnv(ctx, t, (0.08 / (i + 1)) * vel, 0.001, 0.45 + i * 0.05);
     osc.connect(g);
     g.connect(ctx.destination);
     osc.start(t);
@@ -155,21 +163,21 @@ function playCY(ctx: AudioContext, t: number): void {
   const bp = ctx.createBiquadFilter();
   bp.type = "bandpass";
   bp.frequency.setValueAtTime(8000, t);
-  const g = gainEnv(ctx, t, 0.06, 0.001, 0.5);
+  const g = gainEnv(ctx, t, 0.06 * vel, 0.001, 0.5);
   src.connect(bp);
   bp.connect(g);
   g.connect(ctx.destination);
   src.start(t, 0, 0.4);
 }
 
-function playCB(ctx: AudioContext, t: number): void {
+function playCB(ctx: AudioContext, t: number, velocity: number): void {
   const o1 = ctx.createOscillator();
   o1.type = "square";
   o1.frequency.setValueAtTime(540, t);
   const o2 = ctx.createOscillator();
   o2.type = "square";
   o2.frequency.setValueAtTime(800, t);
-  const g = gainEnv(ctx, t, 0.15, 0.001, 0.1);
+  const g = gainEnv(ctx, t, 0.15 * levelFromVelocity(velocity), 0.001, 0.1);
   const m = ctx.createGain();
   m.gain.setValueAtTime(0.5, t);
   o1.connect(m);
@@ -183,43 +191,43 @@ function playCB(ctx: AudioContext, t: number): void {
 }
 
 /** Trigger a voice at audio timeline time `t`. */
-export function playVoice(ctx: AudioContext, voice: VoiceId, t: number): void {
+export function playVoice(ctx: AudioContext, voice: VoiceId, t: number, velocity = 2): void {
   switch (voice) {
     case "BD":
-      playBD(ctx, t);
+      playBD(ctx, t, velocity);
       break;
     case "SD":
-      playSD(ctx, t);
+      playSD(ctx, t, velocity);
       break;
     case "LT":
-      playTom(ctx, t, 190);
+      playTom(ctx, t, 190, velocity);
       break;
     case "MT":
-      playTom(ctx, t, 250);
+      playTom(ctx, t, 250, velocity);
       break;
     case "HT":
-      playTom(ctx, t, 320);
+      playTom(ctx, t, 320, velocity);
       break;
     case "RS":
-      playRS(ctx, t);
+      playRS(ctx, t, velocity);
       break;
     case "CP":
-      playCP(ctx, t);
+      playCP(ctx, t, velocity);
       break;
     case "MA":
-      playMA(ctx, t);
+      playMA(ctx, t, velocity);
       break;
     case "CH":
-      playCH(ctx, t);
+      playCH(ctx, t, velocity);
       break;
     case "OH":
-      playOH(ctx, t);
+      playOH(ctx, t, velocity);
       break;
     case "CY":
-      playCY(ctx, t);
+      playCY(ctx, t, velocity);
       break;
     case "CB":
-      playCB(ctx, t);
+      playCB(ctx, t, velocity);
       break;
     default:
       break;

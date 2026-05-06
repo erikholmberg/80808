@@ -265,11 +265,11 @@ export function analyzeSongAudio(buffer: AudioBuffer, options?: AnalyzeSongAudio
     if (rel < 0.18) continue;
 
     if (zcr < ZCR_LOW && rel > 0.35) {
-      pattern.steps[iBD]![k] = true;
+      pattern.steps[iBD]![k] = 1;
     } else if (zcr > ZCR_HIGH) {
-      pattern.steps[iCH]![k] = true;
+      pattern.steps[iCH]![k] = 1;
     } else {
-      pattern.steps[iSD]![k] = true;
+      pattern.steps[iSD]![k] = 1;
     }
   }
 
@@ -285,7 +285,7 @@ export function analyzeSongAudio(buffer: AudioBuffer, options?: AnalyzeSongAudio
   }
   if (!any) {
     const kMax = slotSums.indexOf(Math.max(...slotSums));
-    pattern.steps[iBD]![kMax] = true;
+    pattern.steps[iBD]![kMax] = 1;
   }
 
   return pattern;
