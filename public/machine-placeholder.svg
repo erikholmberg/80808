@@ -7,7 +7,7 @@
   </defs>
   <rect width="800" height="400" rx="14" fill="url(#panel)" stroke="#111" stroke-width="4"/>
   <text x="400" y="52" text-anchor="middle" fill="#dcdce8" font-family="ui-monospace, monospace" font-size="24" letter-spacing="2">808-style drum machine</text>
-  <text x="400" y="82" text-anchor="middle" fill="#8a8a9a" font-family="ui-monospace, monospace" font-size="13">Drop public/tr808-pixel.png to replace this graphic</text>
+  <text x="400" y="82" text-anchor="middle" fill="#8a8a9a" font-family="ui-monospace, monospace" font-size="13">Drop public/drum-machine-pixel.png to replace this graphic</text>
   <!-- Row 1 pads -->
   <rect x="32" y="120" width="104" height="96" rx="8" fill="#2d2d36" stroke="#0d0d12" stroke-width="3"/>
   <text x="84" y="172" text-anchor="middle" fill="#a4a4b8" font-family="ui-monospace, monospace" font-size="18">BD</text>

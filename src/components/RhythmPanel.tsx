@@ -6,9 +6,9 @@ import type { SavedPatternEntry } from "@/state/savedPatterns";
 import type { VoiceId } from "@/voices";
 import { KeyboardMapLegend } from "@/components/KeyboardMapLegend";
 import { StarterPresetsPopover } from "@/components/StarterPresetsPopover";
-import styles from "./Tr808Panel.module.css";
+import styles from "./RhythmPanel.module.css";
 
-export type Tr808PanelProps = {
+export type RhythmPanelProps = {
   pressed: Partial<Record<VoiceId, boolean>>;
   onPadDown: (voice: VoiceId) => void;
   onPadUp: (voice: VoiceId) => void;
@@ -27,11 +27,10 @@ export type Tr808PanelProps = {
   presets: BeatPattern[];
   savedEntries: SavedPatternEntry[];
   onPresetSelect: (p: BeatPattern) => void;
-  /** Brief visual + polite live-region feedback after Save adds a pattern to the library */
   saveAck?: boolean;
 };
 
-export function Tr808Panel({
+export function RhythmPanel({
   pressed,
   onPadDown,
   onPadUp,
@@ -51,7 +50,7 @@ export function Tr808Panel({
   savedEntries,
   onPresetSelect,
   saveAck = false,
-}: Tr808PanelProps) {
+}: RhythmPanelProps) {
   const playFromPointer = useRef(false);
 
   const togglePlay = () => {

@@ -32,7 +32,7 @@ import {
 } from "@/state/savedPatterns";
 import { VOICES, voiceIndex } from "@/voices";
 import type { VoiceId } from "@/voices";
-import { Tr808Panel } from "@/components/Tr808Panel";
+import { RhythmPanel } from "@/components/RhythmPanel";
 import { StepGrid } from "@/components/StepGrid";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import styles from "./DrumMachine.module.css";
@@ -393,7 +393,7 @@ export function DrumMachine() {
         ) : null}
       </header>
 
-      <Tr808Panel
+      <RhythmPanel
         pressed={pressed}
         onPadDown={handlePadDown}
         onPadUp={endVoice}

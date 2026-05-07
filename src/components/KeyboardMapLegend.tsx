@@ -9,7 +9,7 @@ type Props = {
   onPadUp: (voice: VoiceId) => void;
   /** Remove outer spacing when placed in a composite row (e.g. beside the step grid) */
   embedded?: boolean;
-  /** Inside TR-808 panel — no duplicated card border/background */
+  /** Inside the main panel — no duplicated card border/background */
   nested?: boolean;
 };
 

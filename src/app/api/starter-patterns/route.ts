@@ -118,7 +118,7 @@ Each object must have:
 - "steps": array of exactly ${ROWS} rows; each row is exactly ${STEPS} cells where each cell is 0, 1, or 2.
 Row order must match these 12 voices (index 0 = first row): ${voiceOrder}.
 Each column is one 16th-note step in one bar; 0 = off, 1 = normal hit, 2 = accent hit.
-Each pattern must be meaningfully different (genre, syncopation, density). TR-808-style electronic drums only; plausible human-programmed grooves.`;
+Each pattern must be meaningfully different (genre, syncopation, density). electronic drum-machine style only; plausible human-programmed grooves.`;
 
   const user = `Generate ${count} distinct starter drum patterns as specified.`;
 
