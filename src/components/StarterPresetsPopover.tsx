@@ -187,7 +187,7 @@ export function StarterPresetsPopover({ presets, savedEntries, onSelect }: Props
             </h2>
           </div>
           <div className={styles.panelScroll}>
-            <h3 className={styles.sectionTitle}>Saved</h3>
+            <h3 className={styles.sectionTitle}>Custom</h3>
             {savedEntries.length === 0 ? (
               <p className={styles.empty}>No saved patterns yet.</p>
             ) : (
@@ -206,7 +206,7 @@ export function StarterPresetsPopover({ presets, savedEntries, onSelect }: Props
                 ))}
               </ul>
             )}
-            <h3 className={styles.sectionTitle}>Starters</h3>
+            <h3 className={styles.sectionTitle}>Preset</h3>
             <ul className={styles.list}>
               {visible.map((p, idx) => (
                 <li key={`starter-${idx}-${p.name}`}>
