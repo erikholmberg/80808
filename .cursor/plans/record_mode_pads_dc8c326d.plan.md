@@ -8,8 +8,8 @@ todos:
   - id: drum-machine-logic
     content: Recording state/refs, recordStepRef in RAF loop, pad wrappers, stop/clear disarm
     status: completed
-  - id: tr808-ui
-    content: Record button + styles and props on Tr808Panel
+  - id: drum-machine-ui
+    content: Record button + styles and props on RhythmPanel
     status: completed
   - id: readme
     content: Document Record in README
@@ -21,7 +21,7 @@ isProject: false
 
 ## Behavior (agreed defaults)
 
-- **Record** is a **toggle** next to Play/Stop (same transport row in [`src/components/Tr808Panel.tsx`](src/components/Tr808Panel.tsx)).
+- **Record** is a **toggle** next to Play/Stop (same transport row in [`src/components/RhythmPanel.tsx`](src/components/RhythmPanel.tsx)).
 - **Turn Record on**: set recording armed; if transport is stopped, **start playback** (same as Play—calls existing `touchCtx` path).
 - **Turn Record off**: only disarm recording; playback keeps running until Stop.
 - **Stop** (button or Space): stop transport and **disarm** recording so state stays intuitive.
@@ -46,12 +46,12 @@ React `playhead` state updates once per frame ([`DrumMachine.tsx`](src/app/compo
 2. **[`src/app/components/DrumMachine.tsx`](src/app/components/DrumMachine.tsx)**  
    - State: `recording` + `recordingRef` (keep ref in sync with state in a `useEffect`, same pattern as `playingRef`).  
    - Refs: `recordStepRef` as above; update it in the existing playback `useEffect` loop.  
-   - Handlers: wrap pad path—introduce `handlePadDown(v)` / `handlePadUp(v)` that call record placement on down when `recordingRef.current && playingRef.current`, then delegate to current `beginVoice`/`endVoice`. Wire [`Tr808Panel`](src/components/Tr808Panel.tsx) and the keyboard listener to these wrappers instead of raw `beginVoice`/`endVoice`.  
+   - Handlers: wrap pad path—introduce `handlePadDown(v)` / `handlePadUp(v)` that call record placement on down when `recordingRef.current && playingRef.current`, then delegate to current `beginVoice`/`endVoice`. Wire [`RhythmPanel`](src/components/RhythmPanel.tsx) and the keyboard listener to these wrappers instead of raw `beginVoice`/`endVoice`.  
    - Record toggle callback: set recording on/off; when turning on and `!playing`, call existing `onPlay` logic.  
    - **Stop** path (`onStop`, Space → stop): also `setRecording(false)`. Optionally disarm record on **Clear** ([`onClear`](src/app/components/DrumMachine.tsx)) for predictable resets.  
-   - Pass `recording` + record toggle into `Tr808Panel`.
+   - Pass `recording` + record toggle into `RhythmPanel`.
 
-3. **[`src/components/Tr808Panel.tsx`](src/components/Tr808Panel.tsx)** + **[`Tr808Panel.module.css`](src/components/Tr808Panel.module.css)**  
+3. **[`src/components/RhythmPanel.tsx`](src/components/RhythmPanel.tsx)** + **[`RhythmPanel.module.css`](src/components/RhythmPanel.module.css)**  
    - New props: `recording: boolean`, `onRecordToggle: () => void` (or explicit on/off).  
    - Button: **Record**, `aria-pressed={recording}`, visible active style (e.g. accent border/background consistent with existing `--dm-accent` tokens).
 

@@ -1,5 +1,5 @@
 ---
-name: TR-808 Web Drum Machine
+name: 808-style Web Drum Machine
 overview: Scaffold a new Next.js (App Router) + TypeScript app that uses the Web Audio API for 808-style drum synthesis, shows a pixel-art machine image with keyboard-to-pad mapping below it, highlights pressed keys and depresses matching pads on the graphic, sequences 16-step patterns, and supports preset patterns plus save/load (localStorage + JSON download).
 todos:
   - id: scaffold-next
@@ -23,11 +23,11 @@ todos:
 isProject: false
 ---
 
-# TR-808–style web drum machine
+# 808-style–style web drum machine
 
 ## Context
 
-The workspace [`/Users/erikholmberg/Development/80808`](80808) is **empty**, so this is a **greenfield** build. The UI should evoke the TR-808 (12 instruments, 16-step sequencer) without implying Roland endorsement—use neutral naming in copy (e.g. “808-style drum machine”).
+The workspace [`/Users/erikholmberg/Development/80808`](80808) is **empty**, so this is a **greenfield** build. The UI should evoke the 808-style (12 instruments, 16-step sequencer) without implying Roland endorsement—use neutral naming in copy (e.g. “808-style drum machine”).
 
 ## Recommended stack
 
@@ -41,7 +41,7 @@ The workspace [`/Users/erikholmberg/Development/80808`](80808) is **empty**, so 
 
 - **`AudioContext`, `keydown` / `keyup`, `localStorage`, and file download** only run in the browser. Put the drum machine UI and hooks in **`'use client'`** components (e.g. a single `DrumMachine` tree imported from [`app/page.tsx`](80808/app/page.tsx)).
 - Keep [`app/layout.tsx`](80808/app/layout.tsx) mostly server-safe (metadata, fonts, global styles). The home page can be a thin server component that renders the client shell.
-- Static assets (pixel PNG) live in [`public/tr808-pixel.png`](80808/public/tr808-pixel.png) as usual (`next/image` or `<img>` with `image-rendering: pixelated`).
+- Static assets (pixel PNG) live in [`public/drum-machine-pixel.png`](80808/public/drum-machine-pixel.png) as usual (`next/image` or `<img>` with `image-rendering: pixelated`).
 
 ## Architecture
 
@@ -60,7 +60,7 @@ flowchart LR
 
 ## UI layout
 
-1. **Top**: Full-width **8-bit / pixel machine graphic** — place image at [`public/tr808-pixel.png`](80808/public/tr808-pixel.png) (you supply the asset) with `max-height` and `image-rendering: pixelated`. Until the file exists, ship a **simple SVG placeholder** with the same dimensions so layout does not jump.
+1. **Top**: Full-width **8-bit / pixel machine graphic** — place image at [`public/drum-machine-pixel.png`](80808/public/drum-machine-pixel.png) (you supply the asset) with `max-height` and `image-rendering: pixelated`. Until the file exists, ship a **simple SVG placeholder** with the same dimensions so layout does not jump.
 2. **Directly under the image — keyboard mapping strip**: A clear legend (e.g. row of **kbd-style chips** or a small table) listing **each computer key → voice label** (BD, SD, …) so users never guess the mapping. The legend is driven by the same config as [`src/keymap.ts`](80808/src/keymap.ts).
 3. **Pressed-key feedback (two places at once)**:
    - **Legend**: When a mapped key is held, that legend entry **lights up** (background / border / glow) until `keyup`.
