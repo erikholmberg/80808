@@ -33,9 +33,7 @@ import {
 import { VOICES, voiceIndex } from "@/voices";
 import type { VoiceId } from "@/voices";
 import { Tr808Panel } from "@/components/Tr808Panel";
-import { PresetPicker } from "@/components/PresetPicker";
 import { StepGrid } from "@/components/StepGrid";
-import { SavedPatternsPanel } from "@/components/SavedPatternsPanel";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import styles from "./DrumMachine.module.css";
 
@@ -411,6 +409,15 @@ export function DrumMachine() {
         onBpmChange={onBpmChange}
         onClear={onClear}
         onSave={onSave}
+        presets={BUILT_IN_PRESETS}
+        savedEntries={savedEntries}
+        onPresetSelect={(p) =>
+          setPattern({
+            ...p,
+            steps: p.steps.map((row) => [...row]),
+            stepGain: p.stepGain.map((row) => [...row]),
+          })
+        }
         saveAck={saveAck}
       />
 
@@ -424,29 +431,6 @@ export function DrumMachine() {
           compact
         />
       </div>
-
-      <SavedPatternsPanel
-        entries={savedEntries}
-        onSelect={(p) =>
-          setPattern({
-            ...p,
-            steps: p.steps.map((row) => [...row]),
-            stepGain: p.stepGain.map((row) => [...row]),
-          })
-        }
-        onDelete={(id) => setSavedEntries((prev) => prev.filter((e) => e.id !== id))}
-      />
-
-      <PresetPicker
-        presets={BUILT_IN_PRESETS}
-        onSelect={(p) =>
-          setPattern({
-            ...p,
-            steps: p.steps.map((row) => [...row]),
-            stepGain: p.stepGain.map((row) => [...row]),
-          })
-        }
-      />
     </div>
   );
 }

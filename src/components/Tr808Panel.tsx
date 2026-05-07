@@ -1,8 +1,11 @@
 "use client";
 
 import { useRef } from "react";
+import type { BeatPattern } from "@/state/pattern";
+import type { SavedPatternEntry } from "@/state/savedPatterns";
 import type { VoiceId } from "@/voices";
 import { KeyboardMapLegend } from "@/components/KeyboardMapLegend";
+import { StarterPresetsPopover } from "@/components/StarterPresetsPopover";
 import styles from "./Tr808Panel.module.css";
 
 export type Tr808PanelProps = {
@@ -21,6 +24,9 @@ export type Tr808PanelProps = {
   onBpmChange: (bpm: number) => void;
   onClear: () => void;
   onSave: () => void;
+  presets: BeatPattern[];
+  savedEntries: SavedPatternEntry[];
+  onPresetSelect: (p: BeatPattern) => void;
   /** Brief visual + polite live-region feedback after Save adds a pattern to the library */
   saveAck?: boolean;
 };
@@ -41,6 +47,9 @@ export function Tr808Panel({
   onBpmChange,
   onClear,
   onSave,
+  presets,
+  savedEntries,
+  onPresetSelect,
   saveAck = false,
 }: Tr808PanelProps) {
   const playFromPointer = useRef(false);
@@ -74,6 +83,14 @@ export function Tr808Panel({
               onChange={(e) => onBpmChange(Number(e.target.value))}
             />
           </label>
+          <div className={styles.field}>
+            <span className={styles.fieldLabel}>Saved Patterns</span>
+            <StarterPresetsPopover
+              presets={presets}
+              savedEntries={savedEntries}
+              onSelect={onPresetSelect}
+            />
+          </div>
           <div className={styles.transportButtons}>
             <button
               type="button"
