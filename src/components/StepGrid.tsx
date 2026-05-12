@@ -2,7 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { VoiceId } from "@/voices";
-import { VOICES } from "@/voices";
+import { VOICES, VOICE_LABELS } from "@/voices";
 import type { StepGainGrid, StepGrid as StepGridType } from "@/state/pattern";
 import styles from "./StepGrid.module.css";
 
@@ -17,6 +17,10 @@ type Props = {
   onStepGainChange: (row: number, col: number, gain: number) => void;
   compact?: boolean;
   fillHeight?: boolean;
+  activeRow: number | null;
+  onActiveRowChange: (row: number) => void;
+  activeColumn: number | null;
+  onActiveColumnChange: (col: number) => void;
 };
 
 type PopoverPos = {
@@ -34,6 +38,10 @@ export function StepGrid({
   onStepGainChange,
   compact,
   fillHeight,
+  activeRow,
+  onActiveRowChange,
+  activeColumn,
+  onActiveColumnChange,
 }: Props) {
   const fill = Boolean(compact && fillHeight);
   const cellRefs = useRef<Record<string, HTMLButtonElement | null>>({});
@@ -49,7 +57,9 @@ export function StepGrid({
   const skipTapRef = useRef(false);
 
   const [gainPopover, setGainPopover] = useState<PopoverPos | null>(null);
+  const [helpOpen, setHelpOpen] = useState(false);
   const popoverPanelRef = useRef<HTMLDivElement | null>(null);
+  const helpWrapRef = useRef<HTMLDivElement | null>(null);
 
   const clearHoldTimer = () => {
     window.clearTimeout(holdTimerRef.current);
@@ -59,13 +69,26 @@ export function StepGrid({
   useEffect(() => () => clearHoldTimer(), []);
 
   useEffect(() => {
-    if (!gainPopover) return;
+    if (!gainPopover && !helpOpen) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setGainPopover(null);
+      if (e.key !== "Escape") return;
+      setGainPopover(null);
+      setHelpOpen(false);
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [gainPopover]);
+  }, [gainPopover, helpOpen]);
+
+  useEffect(() => {
+    if (!helpOpen) return;
+    const onPointerDown = (e: PointerEvent) => {
+      const wrap = helpWrapRef.current;
+      if (wrap?.contains(e.target as Node)) return;
+      setHelpOpen(false);
+    };
+    document.addEventListener("pointerdown", onPointerDown, true);
+    return () => document.removeEventListener("pointerdown", onPointerDown, true);
+  }, [helpOpen]);
 
   useEffect(() => {
     if (!gainPopover) return;
@@ -163,27 +186,70 @@ export function StepGrid({
       className={`${styles.wrap} ${compact ? styles.wrapCompact : ""} ${fill ? styles.wrapCompactFill : ""}`}
     >
       {compact ? (
-        <>
-          <p className={styles.cardTitle}>Step sequencer</p>
-          <p className={styles.legend}>
-            Tap: Off {"->"} Normal {"->"} Accent. Hold an on-step for level (mix).
-          </p>
-        </>
+        <div className={styles.compactHeader}>
+          <div className={styles.titleRow}>
+            <p className={styles.cardTitle}>Step sequencer</p>
+            <div
+              ref={helpWrapRef}
+              className={`${styles.helpWrap} ${helpOpen ? styles.helpWrapOpen : ""}`}
+            >
+              <button
+                type="button"
+                className={styles.helpTrigger}
+                aria-expanded={helpOpen}
+                aria-controls="step-grid-help"
+                aria-label="Sequencer tips"
+                onClick={() => setHelpOpen((o) => !o)}
+              >
+                ?
+              </button>
+              <div
+                id="step-grid-help"
+                className={styles.helpPopover}
+                role="region"
+                aria-label="Sequencer tips"
+                onPointerDown={(e) => e.stopPropagation()}
+              >
+                <ul className={styles.helpList}>
+                  <li>Tap a cell: Off → Normal → Accent.</li>
+                  <li>Hold an on-step to set its level (mix).</li>
+                  <li>
+                    Select a voice row or a step-number column (only one at a time), then ⌘C / ⌘V
+                    (Ctrl+C / Ctrl+V) to copy or paste that row or that column. ⌘⇧C / ⌘⇧V
+                    (Ctrl+Shift) still copies or pastes the full bar.
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
       ) : null}
       <div className={styles.headerRow}>
         <div className={styles.corner} />
         {Array.from({ length: 16 }, (_, i) => (
-          <div
+          <button
             key={i}
-            className={`${styles.stepHead} ${playhead === i ? styles.stepHeadActive : ""}`}
+            type="button"
+            className={`${styles.stepHead} ${styles.stepHeadBtn} ${playhead === i ? styles.stepHeadActive : ""} ${activeColumn === i ? styles.stepHeadBtnActive : ""}`}
+            aria-pressed={activeColumn === i}
+            aria-label={`Step ${i + 1}, all voices (column). Select for copy or paste column.`}
+            onClick={() => onActiveColumnChange(i)}
           >
             {i + 1}
-          </div>
+          </button>
         ))}
       </div>
       {VOICES.map((voice: VoiceId, row) => (
         <div key={voice} className={styles.row}>
-          <div className={styles.voice}>{voice}</div>
+          <button
+            type="button"
+            className={`${styles.voice} ${styles.voiceBtn} ${activeRow === row ? styles.voiceBtnActive : ""}`}
+            aria-pressed={activeRow === row}
+            aria-label={`${VOICE_LABELS[voice]} (${voice}). Select for copy or paste row.`}
+            onClick={() => onActiveRowChange(row)}
+          >
+            {voice}
+          </button>
           {steps[row]?.map((on, col) => {
             const gain = stepGain[row]?.[col] ?? 1;
             const gainAdjusted = on > 0 && Math.abs(gain - 1) > 0.02;

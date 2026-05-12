@@ -26,6 +26,16 @@ import {
   type BeatPattern,
 } from "@/state/pattern";
 import {
+  applyBarClip,
+  applyColumnClip,
+  applyRowClip,
+  buildBarClip,
+  buildColumnClip,
+  buildRowClip,
+  parseClipJson,
+  serializeClip,
+} from "@/state/clipboard";
+import {
   loadSavedPatterns,
   persistSavedPatterns,
   type SavedPatternEntry,
@@ -78,6 +88,11 @@ export function DrumMachine() {
   const [pressed, setPressed] = useState<Partial<Record<VoiceId, boolean>>>({});
   const [saveAck, setSaveAck] = useState(false);
   const saveAckTimeoutRef = useRef(0);
+  const [activeRow, setActiveRow] = useState<number | null>(null);
+  const [activeColumn, setActiveColumn] = useState<number | null>(null);
+  const activeRowRef = useRef<number | null>(null);
+  const activeColumnRef = useRef<number | null>(null);
+  const lastClipFallbackRef = useRef<string>("");
 
   const showIOSAudioHint = useSyncExternalStore(
     () => () => {},
@@ -114,6 +129,14 @@ export function DrumMachine() {
   useEffect(() => {
     recordingRef.current = recording;
   }, [recording]);
+
+  useEffect(() => {
+    activeRowRef.current = activeRow;
+  }, [activeRow]);
+
+  useEffect(() => {
+    activeColumnRef.current = activeColumn;
+  }, [activeColumn]);
 
   useEffect(() => {
     try {
@@ -192,6 +215,92 @@ export function DrumMachine() {
     });
   }, []);
 
+  const copyBar = useCallback(() => {
+    const clip = buildBarClip(patternRef.current);
+    const s = serializeClip(clip);
+    lastClipFallbackRef.current = s;
+    void navigator.clipboard.writeText(s).catch(() => {});
+  }, []);
+
+  const pasteBar = useCallback(() => {
+    void (async () => {
+      let t = "";
+      try {
+        t = await navigator.clipboard.readText();
+      } catch {
+        /* ignore */
+      }
+      let parsed = parseClipJson(t);
+      if (!parsed || parsed["80808Clip"] !== "bar") {
+        const fb = parseClipJson(lastClipFallbackRef.current);
+        parsed = fb && fb["80808Clip"] === "bar" ? fb : null;
+      }
+      if (!parsed) return;
+      const next = applyBarClip(patternRef.current, parsed);
+      if (!next) return;
+      patternRef.current = next;
+      setPattern(next);
+    })();
+  }, []);
+
+  const copyRow = useCallback((row: number) => {
+    const clip = buildRowClip(patternRef.current, row);
+    if (!clip) return;
+    const s = serializeClip(clip);
+    lastClipFallbackRef.current = s;
+    void navigator.clipboard.writeText(s).catch(() => {});
+  }, []);
+
+  const pasteRow = useCallback((row: number) => {
+    void (async () => {
+      let t = "";
+      try {
+        t = await navigator.clipboard.readText();
+      } catch {
+        /* ignore */
+      }
+      let parsed = parseClipJson(t);
+      if (!parsed || parsed["80808Clip"] !== "row") {
+        const fb = parseClipJson(lastClipFallbackRef.current);
+        parsed = fb && fb["80808Clip"] === "row" ? fb : null;
+      }
+      if (!parsed) return;
+      const next = applyRowClip(patternRef.current, row, parsed);
+      if (!next) return;
+      patternRef.current = next;
+      setPattern(next);
+    })();
+  }, []);
+
+  const copyColumn = useCallback((col: number) => {
+    const clip = buildColumnClip(patternRef.current, col);
+    if (!clip) return;
+    const s = serializeClip(clip);
+    lastClipFallbackRef.current = s;
+    void navigator.clipboard.writeText(s).catch(() => {});
+  }, []);
+
+  const pasteColumn = useCallback((col: number) => {
+    void (async () => {
+      let t = "";
+      try {
+        t = await navigator.clipboard.readText();
+      } catch {
+        /* ignore */
+      }
+      let parsed = parseClipJson(t);
+      if (!parsed || parsed["80808Clip"] !== "column") {
+        const fb = parseClipJson(lastClipFallbackRef.current);
+        parsed = fb && fb["80808Clip"] === "column" ? fb : null;
+      }
+      if (!parsed) return;
+      const next = applyColumnClip(patternRef.current, col, parsed);
+      if (!next) return;
+      patternRef.current = next;
+      setPattern(next);
+    })();
+  }, []);
+
   useEffect(() => {
     /** Block pads while typing in form fields (use activeElement — reliable with capture-phase listeners). */
     const typing = () => {
@@ -221,6 +330,40 @@ export function DrumMachine() {
         }
         return;
       }
+      const mod = e.metaKey || e.ctrlKey;
+      if (mod && !e.repeat) {
+        const k = e.key.length === 1 ? e.key.toLowerCase() : "";
+        if (k === "c" && e.shiftKey) {
+          e.preventDefault();
+          copyBar();
+          return;
+        }
+        if (k === "v" && e.shiftKey) {
+          e.preventDefault();
+          pasteBar();
+          return;
+        }
+        if (k === "c" && !e.shiftKey && activeColumnRef.current !== null) {
+          e.preventDefault();
+          copyColumn(activeColumnRef.current);
+          return;
+        }
+        if (k === "v" && !e.shiftKey && activeColumnRef.current !== null) {
+          e.preventDefault();
+          pasteColumn(activeColumnRef.current);
+          return;
+        }
+        if (k === "c" && !e.shiftKey && activeRowRef.current !== null) {
+          e.preventDefault();
+          copyRow(activeRowRef.current);
+          return;
+        }
+        if (k === "v" && !e.shiftKey && activeRowRef.current !== null) {
+          e.preventDefault();
+          pasteRow(activeRowRef.current);
+          return;
+        }
+      }
       const v = voiceForKeyboardEvent(e);
       if (!v || e.repeat) return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
@@ -239,7 +382,17 @@ export function DrumMachine() {
       window.removeEventListener("keydown", onKeyDown, { capture: true });
       window.removeEventListener("keyup", onKeyUp, { capture: true });
     };
-  }, [handlePadDown, endVoice, touchCtx]);
+  }, [
+    handlePadDown,
+    endVoice,
+    touchCtx,
+    copyBar,
+    pasteBar,
+    copyRow,
+    pasteRow,
+    copyColumn,
+    pasteColumn,
+  ]);
 
   useEffect(() => {
     if (!playing) return;
@@ -429,6 +582,16 @@ export function DrumMachine() {
           onToggle={onToggle}
           onStepGainChange={onStepGainChange}
           compact
+          activeRow={activeRow}
+          onActiveRowChange={(row) => {
+            setActiveRow(row);
+            setActiveColumn(null);
+          }}
+          activeColumn={activeColumn}
+          onActiveColumnChange={(col) => {
+            setActiveColumn(col);
+            setActiveRow(null);
+          }}
         />
       </div>
     </div>

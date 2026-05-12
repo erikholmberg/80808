@@ -23,15 +23,103 @@
   text-transform: uppercase;
   font-weight: 600;
   color: var(--dm-text-muted);
-  margin: 0 0 0.65rem;
+  margin: 0;
   text-align: left;
 }
 
-.legend {
-  margin: -0.35rem 0 0.65rem;
-  font-size: 0.68rem;
-  color: var(--dm-text-dim);
+.compactHeader {
+  margin-bottom: 0.65rem;
+  min-width: 0;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.helpWrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.helpTrigger {
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 50%;
+  border: 1px solid var(--dm-border);
+  background: var(--dm-surface-2);
+  color: var(--dm-text-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  line-height: 1;
+  cursor: help;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background 0.12s ease,
+    border-color 0.12s ease,
+    color 0.12s ease;
+}
+
+.helpTrigger:hover {
+  border-color: var(--dm-border-hover);
+  background: var(--dm-elevated);
+  color: var(--dm-text);
+}
+
+.helpTrigger:focus-visible {
+  outline: 2px solid var(--dm-focus);
+  outline-offset: 2px;
+}
+
+.helpPopover {
+  position: absolute;
+  z-index: 55;
+  right: 0;
+  top: calc(100% + 6px);
+  width: min(19rem, calc(100vw - 2rem));
+  padding: 0.65rem 0.75rem 0.7rem;
+  border-radius: var(--dm-radius-sm);
+  border: 1px solid var(--dm-border);
+  background: var(--dm-elevated);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.16);
+  font-size: 0.72rem;
+  line-height: 1.45;
+  color: var(--dm-text);
   text-align: left;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 0.2s ease,
+    visibility 0.2s ease;
+}
+
+.helpWrap:hover .helpPopover,
+.helpWrap:focus-within .helpPopover,
+.helpWrap.helpWrapOpen .helpPopover {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.helpList {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.helpList li {
+  margin: 0;
+  padding: 0;
 }
 
 .wrapCompact .headerRow,
@@ -67,15 +155,23 @@
   height: 100%;
   min-height: 0;
   margin-top: 0;
-  overflow: hidden;
+  overflow: visible;
   display: grid;
   grid-template-rows: auto auto repeat(12, minmax(0, 1fr));
   gap: 3px;
   align-content: stretch;
 }
 
-.wrapCompactFill .cardTitle {
+.wrapCompactFill .compactHeader {
   margin-bottom: 0.65rem;
+}
+
+.wrapCompactFill .titleRow {
+  margin-bottom: 0;
+}
+
+.wrapCompactFill .cardTitle {
+  margin-bottom: 0;
 }
 
 .wrapCompactFill .headerRow {
@@ -89,7 +185,7 @@
   container-type: size;
 }
 
-.wrapCompactFill .voice {
+.wrapCompactFill .voiceBtn {
   align-self: center;
 }
 
@@ -157,6 +253,35 @@
   padding: 0.2rem 0;
 }
 
+.stepHeadBtn {
+  margin: 0;
+  border: 1px solid transparent;
+  border-radius: var(--dm-radius-sm);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.stepHeadBtn:hover {
+  border-color: var(--dm-border-subtle);
+  background: var(--dm-bg);
+}
+
+.stepHeadBtn:focus-visible {
+  outline: 2px solid var(--dm-focus);
+  outline-offset: 1px;
+}
+
+.stepHeadBtnActive {
+  border-color: var(--dm-accent);
+  background: var(--dm-accent-muted);
+  color: var(--dm-accent);
+}
+
 .stepHeadActive {
   color: var(--dm-accent);
   font-weight: 700;
@@ -176,6 +301,37 @@
   color: var(--dm-text-muted);
   display: flex;
   align-items: center;
+}
+
+.voiceBtn {
+  justify-content: flex-start;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 2px 4px;
+  border: 1px solid transparent;
+  border-radius: var(--dm-radius-sm);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.voiceBtn:hover {
+  border-color: var(--dm-border-subtle);
+  background: var(--dm-bg);
+}
+
+.voiceBtn:focus-visible {
+  outline: 2px solid var(--dm-focus);
+  outline-offset: 1px;
+}
+
+.voiceBtnActive {
+  border-color: var(--dm-accent);
+  background: var(--dm-accent-muted);
+  color: var(--dm-accent);
 }
 
 .cell {
