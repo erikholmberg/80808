@@ -107,6 +107,11 @@
   outline-offset: 1px;
 }
 
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .btnPrimary {
   border: none;
   background: var(--dm-accent);

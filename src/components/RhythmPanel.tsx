@@ -24,6 +24,10 @@ export type RhythmPanelProps = {
   onBpmChange: (bpm: number) => void;
   onClear: () => void;
   onSave: () => void;
+  onUndo: () => void;
+  onRedo: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
   presets: BeatPattern[];
   savedEntries: SavedPatternEntry[];
   onPresetSelect: (p: BeatPattern) => void;
@@ -46,6 +50,10 @@ export function RhythmPanel({
   onBpmChange,
   onClear,
   onSave,
+  onUndo,
+  onRedo,
+  canUndo,
+  canRedo,
   presets,
   savedEntries,
   onPresetSelect,
@@ -119,6 +127,24 @@ export function RhythmPanel({
             </button>
             <button type="button" className={styles.btn} onClick={onClear}>
               Clear
+            </button>
+            <button
+              type="button"
+              className={styles.btn}
+              onClick={onUndo}
+              disabled={!canUndo}
+              title="Undo (⌘Z / Ctrl+Z)"
+            >
+              Undo
+            </button>
+            <button
+              type="button"
+              className={styles.btn}
+              onClick={onRedo}
+              disabled={!canRedo}
+              title="Redo (⌘⇧Z / Ctrl+Shift+Z or Ctrl+Y)"
+            >
+              Redo
             </button>
             <button type="button" className={styles.btn} onClick={onSave}>
               Save

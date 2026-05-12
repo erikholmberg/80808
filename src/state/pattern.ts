@@ -126,3 +126,28 @@ export function normalizeBeatPattern(data: unknown): BeatPattern | null {
 export function isValidBeatPattern(data: unknown): data is BeatPattern {
   return normalizeBeatPattern(data) !== null;
 }
+
+export function cloneBeatPattern(p: BeatPattern): BeatPattern {
+  return {
+    name: p.name,
+    bpm: p.bpm,
+    steps: p.steps.map((row) => [...row]),
+    stepGain: p.stepGain.map((row) => [...row]),
+  };
+}
+
+export function beatPatternsEqual(a: BeatPattern, b: BeatPattern): boolean {
+  if (a.name !== b.name || a.bpm !== b.bpm) return false;
+  for (let r = 0; r < ROWS; r++) {
+    const ar = a.steps[r];
+    const br = b.steps[r];
+    const agr = a.stepGain[r];
+    const bgr = b.stepGain[r];
+    if (!ar || !br || !agr || !bgr) return false;
+    for (let c = 0; c < STEPS; c++) {
+      if (ar[c] !== br[c]) return false;
+      if (agr[c] !== bgr[c]) return false;
+    }
+  }
+  return true;
+}

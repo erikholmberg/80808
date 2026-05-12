@@ -3,6 +3,7 @@
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   startTransition,
@@ -17,7 +18,9 @@ import { secondsPerStep } from "@/audio/sequencer";
 import { voiceForKeyboardEvent } from "@/keymap";
 import { BUILT_IN_PRESETS } from "@/presets";
 import {
+  beatPatternsEqual,
   clearPattern,
+  cloneBeatPattern,
   createEmptyPattern,
   normalizeBeatPattern,
   setStepGain,
@@ -48,6 +51,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import styles from "./DrumMachine.module.css";
 
 const STORAGE_KEY = "80808-beat-v1";
+const PATTERN_HISTORY_MAX = 80;
 
 function loadStored(): BeatPattern | null {
   if (typeof window === "undefined") return null;
@@ -63,12 +67,69 @@ function loadStored(): BeatPattern | null {
 }
 
 export function DrumMachine() {
-  const [pattern, setPattern] = useState<BeatPattern>(() => createEmptyPattern());
+  const initialPattern = useMemo(() => createEmptyPattern(), []);
+  const [pattern, setPatternState] = useState<BeatPattern>(() => initialPattern);
+  const patternRef = useRef<BeatPattern>(initialPattern);
+  const pastRef = useRef<BeatPattern[]>([]);
+  const futureRef = useRef<BeatPattern[]>([]);
+  const [canUndo, setCanUndo] = useState(false);
+  const [canRedo, setCanRedo] = useState(false);
+
+  const syncHistoryAvailability = useCallback(() => {
+    setCanUndo(pastRef.current.length > 0);
+    setCanRedo(futureRef.current.length > 0);
+  }, []);
+
+  const setPatternOnly = useCallback(
+    (next: BeatPattern) => {
+      patternRef.current = next;
+      setPatternState(next);
+      syncHistoryAvailability();
+    },
+    [syncHistoryAvailability],
+  );
+
+  const commitPattern = useCallback(
+    (updater: BeatPattern | ((prev: BeatPattern) => BeatPattern)) => {
+      const prev = patternRef.current;
+      const next = typeof updater === "function" ? (updater as (p: BeatPattern) => BeatPattern)(prev) : updater;
+      if (beatPatternsEqual(prev, next)) return;
+      pastRef.current.push(cloneBeatPattern(prev));
+      if (pastRef.current.length > PATTERN_HISTORY_MAX) pastRef.current.shift();
+      futureRef.current = [];
+      patternRef.current = next;
+      setPatternState(next);
+      syncHistoryAvailability();
+    },
+    [syncHistoryAvailability],
+  );
+
+  const undo = useCallback(() => {
+    if (pastRef.current.length === 0) return;
+    const next = pastRef.current.pop()!;
+    futureRef.current.unshift(cloneBeatPattern(patternRef.current));
+    setPatternOnly(next);
+  }, [setPatternOnly]);
+
+  const redo = useCallback(() => {
+    if (futureRef.current.length === 0) return;
+    const current = cloneBeatPattern(patternRef.current);
+    const next = futureRef.current.shift()!;
+    pastRef.current.push(current);
+    if (pastRef.current.length > PATTERN_HISTORY_MAX) pastRef.current.shift();
+    setPatternOnly(next);
+  }, [setPatternOnly]);
 
   useEffect(() => {
     const stored = loadStored();
-    if (stored) startTransition(() => setPattern(stored));
-  }, []);
+    if (stored) {
+      startTransition(() => {
+        pastRef.current = [];
+        futureRef.current = [];
+        setPatternOnly(stored);
+      });
+    }
+  }, [setPatternOnly]);
 
   const [savedEntries, setSavedEntries] = useState<SavedPatternEntry[]>([]);
 
@@ -110,17 +171,12 @@ export function DrumMachine() {
 
   const audioCtxRef = useRef<AudioContext | null>(null);
 
-  const patternRef = useRef(pattern);
   const playingRef = useRef(playing);
   const recordingRef = useRef(recording);
   const recordStepRef = useRef<number | null>(null);
 
   const stepIndexRef = useRef(0);
   const nextStepTimeRef = useRef(0);
-
-  useEffect(() => {
-    patternRef.current = pattern;
-  }, [pattern]);
 
   useEffect(() => {
     playingRef.current = playing;
@@ -187,7 +243,7 @@ export function DrumMachine() {
     (v: VoiceId) => {
       if (recordingRef.current && playingRef.current) {
         const row = voiceIndex(v);
-        setPattern((p) => {
+        commitPattern((p) => {
           if (!recordingRef.current || !playingRef.current) return p;
           const col = recordStepRef.current;
           if (col === null || p.steps[row]?.[col] === undefined) return p;
@@ -198,13 +254,12 @@ export function DrumMachine() {
             stepGain = setStepGain(p.stepGain, row, col, 1);
           }
           const next = { ...p, steps, stepGain };
-          patternRef.current = next;
           return next;
         });
       }
       beginVoice(v);
     },
-    [beginVoice],
+    [beginVoice, commitPattern],
   );
 
   const endVoice = useCallback((v: VoiceId) => {
@@ -238,10 +293,9 @@ export function DrumMachine() {
       if (!parsed) return;
       const next = applyBarClip(patternRef.current, parsed);
       if (!next) return;
-      patternRef.current = next;
-      setPattern(next);
+      commitPattern(next);
     })();
-  }, []);
+  }, [commitPattern]);
 
   const copyRow = useCallback((row: number) => {
     const clip = buildRowClip(patternRef.current, row);
@@ -267,10 +321,9 @@ export function DrumMachine() {
       if (!parsed) return;
       const next = applyRowClip(patternRef.current, row, parsed);
       if (!next) return;
-      patternRef.current = next;
-      setPattern(next);
+      commitPattern(next);
     })();
-  }, []);
+  }, [commitPattern]);
 
   const copyColumn = useCallback((col: number) => {
     const clip = buildColumnClip(patternRef.current, col);
@@ -296,10 +349,9 @@ export function DrumMachine() {
       if (!parsed) return;
       const next = applyColumnClip(patternRef.current, col, parsed);
       if (!next) return;
-      patternRef.current = next;
-      setPattern(next);
+      commitPattern(next);
     })();
-  }, []);
+  }, [commitPattern]);
 
   useEffect(() => {
     /** Block pads while typing in form fields (use activeElement — reliable with capture-phase listeners). */
@@ -333,6 +385,17 @@ export function DrumMachine() {
       const mod = e.metaKey || e.ctrlKey;
       if (mod && !e.repeat) {
         const k = e.key.length === 1 ? e.key.toLowerCase() : "";
+        if (k === "z") {
+          e.preventDefault();
+          if (e.shiftKey) redo();
+          else undo();
+          return;
+        }
+        if (k === "y" && !e.shiftKey) {
+          e.preventDefault();
+          redo();
+          return;
+        }
         if (k === "c" && e.shiftKey) {
           e.preventDefault();
           copyBar();
@@ -386,6 +449,8 @@ export function DrumMachine() {
     handlePadDown,
     endVoice,
     touchCtx,
+    undo,
+    redo,
     copyBar,
     pasteBar,
     copyRow,
@@ -450,7 +515,7 @@ export function DrumMachine() {
   }, [playing]);
 
   const onToggle = (row: number, col: number) => {
-    setPattern((p) => {
+    commitPattern((p) => {
       const cur = p.steps[row]![col]!;
       const nextSteps = toggleStep(p.steps, row, col);
       const nextVal = nextSteps[row]![col]!;
@@ -465,7 +530,7 @@ export function DrumMachine() {
   };
 
   const onStepGainChange = (row: number, col: number, gain: number) => {
-    setPattern((p) => ({
+    commitPattern((p) => ({
       ...p,
       stepGain: setStepGain(p.stepGain, row, col, gain),
     }));
@@ -495,12 +560,12 @@ export function DrumMachine() {
 
   const onClear = () => {
     setRecording(false);
-    setPattern((p) => ({ ...p, ...clearPattern() }));
+    commitPattern((p) => ({ ...p, ...clearPattern() }));
   };
 
   const onBpmChange = (bpm: number) => {
     const n = Math.min(200, Math.max(40, Math.round(bpm)) || 120);
-    setPattern((p) => ({ ...p, bpm: n }));
+    commitPattern((p) => ({ ...p, bpm: n }));
   };
 
   const savePatternToLibrary = useCallback((p: BeatPattern) => {
@@ -557,16 +622,21 @@ export function DrumMachine() {
         onRecordToggle={onRecordToggle}
         playhead={playing ? playhead : null}
         name={pattern.name}
-        onNameChange={(name) => setPattern((p) => ({ ...p, name }))}
+        onNameChange={(name) => commitPattern((p) => ({ ...p, name }))}
         bpm={pattern.bpm}
         onBpmChange={onBpmChange}
         onClear={onClear}
         onSave={onSave}
+        onUndo={undo}
+        onRedo={redo}
+        canUndo={canUndo}
+        canRedo={canRedo}
         presets={BUILT_IN_PRESETS}
         savedEntries={savedEntries}
         onPresetSelect={(p) =>
-          setPattern({
-            ...p,
+          commitPattern({
+            name: p.name,
+            bpm: p.bpm,
             steps: p.steps.map((row) => [...row]),
             stepGain: p.stepGain.map((row) => [...row]),
           })

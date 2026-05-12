@@ -218,6 +218,10 @@ export function StepGrid({
                     (Ctrl+C / Ctrl+V) to copy or paste that row or that column. ⌘⇧C / ⌘⇧V
                     (Ctrl+Shift) still copies or pastes the full bar.
                   </li>
+                  <li>
+                    ⌘Z / Ctrl+Z undoes; ⌘⇧Z / Ctrl+Shift+Z or Ctrl+Y redoes pattern changes (grid, name,
+                    BPM, presets, paste).
+                  </li>
                 </ul>
               </div>
             </div>
