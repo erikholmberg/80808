@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="80808 Drum Machine">
+  <rect width="64" height="64" rx="14" fill="#18181b"/>
+  <g fill="#3f3f46">
+    <rect x="8" y="8" width="9" height="9" rx="2"/>
+    <rect x="21" y="8" width="9" height="9" rx="2"/>
+    <rect x="34" y="8" width="9" height="9" rx="2"/>
+    <rect x="47" y="8" width="9" height="9" rx="2"/>
+    <rect x="8" y="21" width="9" height="9" rx="2"/>
+    <rect x="21" y="21" width="9" height="9" rx="2"/>
+    <rect x="34" y="21" width="9" height="9" rx="2"/>
+    <rect x="47" y="21" width="9" height="9" rx="2"/>
+    <rect x="8" y="34" width="9" height="9" rx="2"/>
+    <rect x="21" y="34" width="9" height="9" rx="2"/>
+    <rect x="34" y="34" width="9" height="9" rx="2"/>
+    <rect x="47" y="34" width="9" height="9" rx="2"/>
+    <rect x="8" y="47" width="9" height="9" rx="2"/>
+    <rect x="21" y="47" width="9" height="9" rx="2"/>
+    <rect x="34" y="47" width="9" height="9" rx="2"/>
+    <rect x="47" y="47" width="9" height="9" rx="2"/>
+  </g>
+  <g fill="#facc15" stroke="#a16207" stroke-width="1">
+    <rect x="8" y="8" width="9" height="9" rx="2"/>
+    <rect x="34" y="8" width="9" height="9" rx="2"/>
+    <rect x="21" y="21" width="9" height="9" rx="2"/>
+    <rect x="47" y="21" width="9" height="9" rx="2"/>
+    <rect x="8" y="34" width="9" height="9" rx="2"/>
+  </g>
+</svg>
