@@ -1,5 +1,7 @@
 # 80808 Drum Machine
 
+![80808 step sequencer running a beat](public/demo.gif)
+
 A browser-based drum machine built with **Next.js** and the **Web Audio API**. It follows the classic 12-voice / 16-step layout found on iconic analog drum machines—without using third-party trademarks in the UI.
 
 ## What it does
